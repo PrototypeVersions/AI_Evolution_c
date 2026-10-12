@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+# Raw experimental history is large and local-only; findings are published to docs/.
+results.db
+results.db-journal
+*.sqlite
+.venv/
+venv/
+.DS_Store
