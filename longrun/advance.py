@@ -24,6 +24,7 @@ from typing import Dict, List
 from experiments.records import code_commit
 
 from .model import ACTIONS, FAMILIES, FAMILY_OF, World, describe_program, program_shape
+from .phylo import ShapeTracker, fresh_state
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CONFIG = os.path.join(HERE, "config.json")
@@ -34,11 +35,13 @@ STATE = os.path.join(STATE_DIR, "world.json.gz")
 HIST_HAB = os.path.join(STATE_DIR, "history_habitats.jsonl")
 HIST_WORLD = os.path.join(STATE_DIR, "history_world.jsonl")
 EVENTS = os.path.join(STATE_DIR, "events.jsonl")
+HIST_SHAPES = os.path.join(STATE_DIR, "history_shapes.jsonl")
 META = os.path.join(STATE_DIR, "meta.json")
 DOCS = os.path.join(os.path.dirname(HERE), "docs", "longrun.json")
 
 FAMILY_IDX = {f: i for i, f in enumerate(FAMILIES)}
 SETTLED, HOLD = 5, 20   # a habitat is "settled" after >= 5 agents for 20 ticks
+SHAPE_EVERY = 100       # ticks between strategy-population samples
 
 
 def _now() -> str:
@@ -70,6 +73,8 @@ class Observer:
         self.w, self.meta, self.history, self.cfg = world, meta, history, cfg
         self.new_events: List[Dict] = []
         self.names = [h["name"] for h in cfg["habitats"]]
+        self.history.setdefault("shapes", [])
+        self.phylo = ShapeTracker(meta.setdefault("phylo", fresh_state()))
 
     def event(self, kind: str, text: str, **data) -> None:
         self.new_events.append({"tick": self.w.tick, "epoch": self.w.epoch, "kind": kind,
@@ -83,6 +88,7 @@ class Observer:
 
     def after_tick(self) -> None:
         w, m = self.w, self.meta
+        self.phylo.observe_births(w)
         for kind, data in w.tick_events:
             if kind == "shock":
                 self.event("shock", f"Shock in {self.names[data['habitat']]}: which node types are viable changed abruptly.", habitat=data["habitat"])
@@ -161,10 +167,18 @@ class Observer:
                 len({a.lineage for a in ags}),
                 max((a.gen for a in ags), default=0),
                 fam, w.window["births"][h], w.window["deaths"][h], w.window["arrivals"][h],
-                w.window["steals"][h],
+                w.window["steals"][h], [round(v, 2) for v in w.habitats[h]["via"]],
             ])
         w.window = w._empty_window()
 
+        shape_counts = self.phylo.sample(w)
+        if w.tick % SHAPE_EVERY == 0:
+            fam_counts = collections.Counter()
+            for sid, c in shape_counts.items():
+                r = self.phylo.nearest_registered(sid)
+                if r is not None:
+                    fam_counts[r] += c
+            self.history["shapes"].append([w.tick, sorted([sid, c] for sid, c in fam_counts.items() if c >= 2)])
         shapes = collections.Counter(program_shape(a.rules, a.default) for a in w.agents)
         n_alive = len(w.agents)
         diversity = sum(1 for c in shapes.values() if c >= 3)
@@ -218,9 +232,24 @@ def _append_jsonl(path: str, rows: List) -> None:
 
 
 def publish(world: World, meta: Dict, cfg: Dict, commit: str) -> Dict:
-    history = {"habitat": _read_jsonl(HIST_HAB), "world": _read_jsonl(HIST_WORLD)}
+    history = {"habitat": _read_jsonl(HIST_HAB), "world": _read_jsonl(HIST_WORLD),
+               "shapes": _read_jsonl(HIST_SHAPES)}
     events = _read_jsonl(EVENTS)
     names = [h["name"] for h in cfg["habitats"]]
+    tracker = ShapeTracker(meta["phylo"])
+    phylo = tracker.publish(world)
+
+    # A snapshot of every node and agent right now, for the live habitat view.
+    snap_agents = []
+    for a in world.agents:
+        sid = meta["phylo"]["agent_shape"].get(str(a.id))
+        reg = tracker.nearest_registered(sid) if sid is not None else None
+        snap_agents.append([a.hab, a.node, -1 if reg is None else reg, int(sid is not None and sid == reg),
+                            a.lineage, round(a.energy, 2), a.gen, a.age])
+    snapshot = {
+        "nodes": [[[n[0], n[2], round(n[3], 2), n[4]] for n in hab["nodes"]] for hab in world.habitats],
+        "agents": snap_agents,
+    }
     by_hab = collections.defaultdict(list)
     for ag in world.agents:
         by_hab[ag.hab].append(ag)
@@ -286,10 +315,16 @@ def publish(world: World, meta: Dict, cfg: Dict, commit: str) -> Dict:
                    "shapes_ever_spread": len(meta["seen_shapes"])},
         "habitats": habitats, "strategies": strategies, "lineages": lineages,
         "habitat_columns": ["tick", "habitat", "population", "mean_energy", "lineages", "max_gen",
-                            "family_actions", "births", "deaths", "arrivals", "steals"],
+                            "family_actions", "births", "deaths", "arrivals", "steals", "viability"],
         "world_columns": ["tick", "alive", "strategy_shapes", "top_shape_share", "lineages"],
         "habitat_history": [r for r in history["habitat"] if keep(r[0])],
         "world_history": [r for r in history["world"] if keep(r[0])],
+        "shape_history": history["shapes"][::max(1, len(history["shapes"]) // 600)],
+        "shape_history_note": "per sample: [tick, [[shape_id, agents incl. unregistered variants], ...]]",
+        "phylo": phylo["shapes"], "phylo_registered_total": phylo["registered_total"], "snapshot": snapshot,
+        "snapshot_columns": {"node": ["arch", "capacity", "resource", "occupants"],
+                             "agent": ["habitat", "node", "shape_id", "exact_shape", "lineage", "energy", "gen", "age"]},
+        "n_arch": cfg["n_arch"],
         "events": events[-300:], "event_count": len(events),
         "interventions": meta["interventions"], "advances": meta["advances"][-30:],
     }
@@ -297,6 +332,20 @@ def publish(world: World, meta: Dict, cfg: Dict, commit: str) -> Dict:
     with open(DOCS, "w") as fh:
         json.dump(out, fh, separators=(",", ":"))
     return out
+
+
+def genesis(cfg: Dict):
+    """A brand-new world at tick 0, with its observer. Shared by advance and replay."""
+    world = World(cfg)
+    meta = _fresh_meta(cfg)
+    obs = Observer(world, meta, {"habitat": [], "world": [], "shapes": []}, cfg)
+    home = cfg["founder_habitat"]
+    obs.event("genesis", f"World created: {len(cfg['habitats'])} habitats, {cfg['founders']} founders in {cfg['habitats'][home]['name']}.")
+    obs.phylo.observe_births(world)
+    meta["occupied"] = obs._pops()
+    meta["colonized"] = [p > 0 for p in meta["occupied"]]
+    meta["hstate"][home], meta["ever_settled"][home], meta["settled_at"][home] = "settled", True, 0
+    return world, meta, obs
 
 
 def advance(ticks: int, init: bool = False) -> Dict:
@@ -307,22 +356,15 @@ def advance(ticks: int, init: bool = False) -> Dict:
     os.makedirs(STATE_DIR, exist_ok=True)
 
     if init or not os.path.exists(STATE):
-        world = World(cfg)
-        for path in (HIST_HAB, HIST_WORLD, EVENTS):
+        for path in (HIST_HAB, HIST_WORLD, EVENTS, HIST_SHAPES):
             if os.path.exists(path):
                 os.remove(path)
-        meta = _fresh_meta(cfg)
-        obs = Observer(world, meta, {"habitat": [], "world": []}, cfg)
-        home = cfg["founder_habitat"]
-        obs.event("genesis", f"World created: {len(cfg['habitats'])} habitats, {cfg['founders']} founders in {cfg['habitats'][home]['name']}.")
-        meta["occupied"] = obs._pops()
-        meta["colonized"] = [p > 0 for p in meta["occupied"]]
-        meta["hstate"][home], meta["ever_settled"][home], meta["settled_at"][home] = "settled", True, 0
+        world, meta, obs = genesis(cfg)
     else:
         with open(META) as fh:
             meta = json.load(fh)
         world = World.from_state(cfg, _read_gz(STATE))
-        obs = Observer(world, meta, {"habitat": [], "world": []}, cfg)
+        obs = Observer(world, meta, {"habitat": [], "world": [], "shapes": []}, cfg)
         new_hash = _hash(cfg)
         if new_hash != meta["config_hash"]:
             entry = {"tick": world.tick, "at": _now(), "from": meta["config_hash"], "to": new_hash,
@@ -345,6 +387,7 @@ def advance(ticks: int, init: bool = False) -> Dict:
     _append_jsonl(HIST_HAB, obs.history["habitat"])
     _append_jsonl(HIST_WORLD, obs.history["world"])
     _append_jsonl(EVENTS, obs.new_events)
+    _append_jsonl(HIST_SHAPES, obs.history["shapes"])
     with open(META, "w") as fh:
         json.dump(meta, fh, separators=(",", ":"))
     return publish(world, meta, cfg, commit)

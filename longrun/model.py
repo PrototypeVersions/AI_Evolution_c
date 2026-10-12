@@ -92,6 +92,11 @@ def program_shape(rules: List[Rule], default: int) -> str:
 
     Programs that differ only in tuning share a shape; a new shape means the
     structure of behaviour changed (a rule gained, lost, or rewired)."""
+    rules = list(rules)
+    # Trailing rules whose action equals the default can never change behaviour:
+    # if they match, they do what the default would have done anyway.
+    while rules and rules[-1][3] == default:
+        rules.pop()
     parts = [f"if {FEATURES[f]}{'<>'[op]}·: {ACTIONS[a]}" for f, op, t, a in rules]
     parts.append(f"else {ACTIONS[default]}")
     return "; ".join(parts)

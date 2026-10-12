@@ -59,6 +59,34 @@ class Advance(unittest.TestCase):
         self.assertEqual(out2["events"][0]["kind"], "genesis")
         self.assertEqual(out2["interventions"], [])
 
+    def test_strategy_tree_is_identical_across_checkpoints(self):
+        one = adv.advance(600, init=True)
+        meta_one = json.loads(pathlib.Path(adv.META).read_text())["phylo"]
+        adv.advance(300, init=True)
+        two = adv.advance(300)
+        meta_two = json.loads(pathlib.Path(adv.META).read_text())["phylo"]
+        self.assertEqual(meta_one, meta_two)
+        self.assertEqual(one["phylo"], two["phylo"])
+        self.assertEqual(one["shape_history"], two["shape_history"])
+        self.assertTrue(one["phylo"], "expected at least one registered strategy shape")
+        ids = {s["id"] for s in one["phylo"]}
+        for s in one["phylo"]:
+            self.assertTrue(s["parent"] is None or s["parent"] in ids, "tree must stay connected")
+
+    def test_snapshot_matches_world(self):
+        out = adv.advance(200, init=True)
+        self.assertEqual(len(out["snapshot"]["agents"]), out["totals"]["alive"])
+        occupied = sum(n[3] for hab in out["snapshot"]["nodes"] for n in hab)
+        self.assertEqual(occupied, out["totals"]["alive"])
+
+    def test_replay_reproduces_checkpoint(self):
+        from longrun import replay
+        adv.advance(250, init=True)
+        adv.advance(250)
+        report = replay.replay(rewrite=True)
+        self.assertTrue(report["state_matches"])
+        self.assertTrue(report["events_match"])
+
     def test_config_change_is_logged_as_intervention(self):
         adv.advance(100, init=True)
         cfg = dict(CFG)
