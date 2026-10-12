@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Long Run</title>
+<meta name="description" content="One persistent simulated world of evolving agents, advanced daily and never reset.">
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb;
+    --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
+    --h0: #2a78d6; --h1: #eb6834; --h2: #1baf7a; --h3: #eda100;
+    --seq: #2a78d6; --seq-lo: #cde2fb;
+    --critical: #d03b3b; --warn: #fab219; --good: #0ca30c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19;
+      --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+      --h0: #3987e5; --h1: #d95926; --h2: #199e70; --h3: #c98500;
+      --seq: #3987e5; --seq-lo: #184f95;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19;
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --h0: #3987e5; --h1: #d95926; --h2: #199e70; --h3: #c98500;
+    --seq: #3987e5; --seq-lo: #184f95;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 28px 16px 64px; }
+  nav { display: flex; gap: 16px; font-size: 14px; margin-bottom: 18px; }
+  nav a { color: var(--ink-2); text-decoration: none; }
+  nav a[aria-current] { color: var(--ink); font-weight: 600; }
+  h1 { font-size: 28px; margin: 10px 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 17px; margin: 0 0 4px; }
+  .lede { color: var(--ink-2); margin: 0 0 8px; max-width: 72ch; }
+  .badge { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--ink-2);
+           border: 1px solid var(--ring); border-radius: 999px; padding: 3px 10px; background: var(--surface); }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 22px 0; }
+  .tile, .card { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; }
+  .tile { padding: 12px 14px; }
+  .tile .k { font-size: 13px; color: var(--ink-2); }
+  .tile .v { font-size: 26px; font-weight: 600; margin-top: 2px; }
+  .tile .s { font-size: 12px; color: var(--muted); }
+  .card { padding: 18px; margin: 16px 0; }
+  .sub { color: var(--ink-2); font-size: 13px; margin: 0 0 12px; max-width: 80ch; }
+  .two { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 860px) { .two { grid-template-columns: minmax(0, 1fr); } }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--ink-2); margin: 4px 0 8px; }
+  .legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  svg text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  svg .lbl { font-size: 12px; fill: var(--ink-2); }
+  svg .lbl-strong { font-size: 13px; fill: var(--ink); font-weight: 600; }
+  .chart { overflow-x: auto; }
+  .chart > svg { min-width: 600px; }
+  .smalls { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .smalls h3 { font-size: 13px; font-weight: 600; margin: 0 0 2px; }
+  .smalls .now { font-size: 12px; color: var(--ink-2); margin: 0 0 4px; }
+  .tip { position: fixed; pointer-events: none; background: var(--surface); color: var(--ink);
+         border: 1px solid var(--ring); border-radius: 8px; padding: 8px 10px; font-size: 12px; max-width: 340px;
+         box-shadow: 0 4px 16px rgba(0,0,0,0.12); display: none; z-index: 10; }
+  .tip .row { display: flex; justify-content: space-between; gap: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+  th { color: var(--ink-2); font-weight: 500; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .scroll { overflow-x: auto; }
+  code.prog { font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink); }
+  .heat td.cell { text-align: center; font-variant-numeric: tabular-nums; border: 2px solid var(--surface); border-radius: 4px; }
+  .feed { list-style: none; margin: 0; padding: 0; max-height: 520px; overflow-y: auto; }
+  .feed li { display: grid; grid-template-columns: 74px 22px minmax(0, 1fr); overflow-wrap: anywhere; gap: 6px; padding: 8px 2px; border-bottom: 1px solid var(--grid); font-size: 13px; }
+  .feed .t { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .feed .ic { text-align: center; }
+  .feed code { font-size: 12px; }
+  .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .filters button { background: none; border: 1px solid var(--ring); color: var(--ink-2); border-radius: 999px;
+                    padding: 3px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+  .filters button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  footer { color: var(--muted); font-size: 12px; margin-top: 32px; }
+  footer a { color: var(--ink-2); }
+</style>
+</head>
+<body>
+<main>
+  <nav><a href="index.html">Lab studies</a><a href="world.html" aria-current="page">The long run</a></nav>
+  <span class="badge">Closed simulation · rule-based agents · no AI model connected yet</span>
+  <h1>The Long Run</h1>
+  <p class="lede">One persistent world that is never reset. Agents carry small behaviour programs that mutate when they reproduce; they forage, breed, learn, move between four habitats, and can steal from neighbours. Nothing about their strategies is scripted. The world advances every day and this page shows what has happened so far.</p>
+  <p class="lede" id="asof" style="font-size:13px"></p>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="two">
+    <section class="card">
+      <h2>The four habitats</h2>
+      <p class="sub">Circle size is population relative to capacity; lines are the migration routes. Hover a habitat for details.</p>
+      <div id="map"></div>
+    </section>
+    <section class="card">
+      <h2>What each habitat's agents spend their time on</h2>
+      <p class="sub">Share of all actions over the most recent samples. Darker means a larger share.</p>
+      <div class="scroll"><table class="heat" id="heat"></table></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Population by habitat</h2>
+    <p class="sub">Living agents in each habitat over time. Triangles along the top mark sudden shocks in that habitat's colour.</p>
+    <div class="legend" id="pop-legend"></div>
+    <div class="chart" id="pop-chart"></div>
+  </section>
+
+  <section class="card">
+    <h2>Behaviour over time</h2>
+    <p class="sub">Across the whole world, the share of actions in each family, plus how many distinct strategy shapes are alive (shapes held by at least 3 agents).</p>
+    <div class="smalls" id="smalls"></div>
+  </section>
+
+  <section class="card">
+    <h2>Living strategies</h2>
+    <p class="sub">A strategy shape is a program with its numeric thresholds blanked out; programs that differ only in tuning share a shape. The example is the most common exact program within the shape. Rules are checked top to bottom and the first match fires.</p>
+    <div class="scroll"><table id="strategies"></table></div>
+  </section>
+
+  <section class="card">
+    <h2>Event feed</h2>
+    <p class="sub">Notable moments, detected automatically. Descriptive only: an event says what happened, not why.</p>
+    <div class="filters" id="filters"></div>
+    <ul class="feed" id="feed"></ul>
+  </section>
+
+  <div class="two">
+    <section class="card">
+      <h2>Surviving lineages</h2>
+      <p class="sub">Every agent descends from one of the founders. Lineages die out when their last member does.</p>
+      <div class="scroll"><table id="lineages"></table></div>
+    </section>
+    <section class="card">
+      <h2>Record</h2>
+      <p class="sub">Every advance is logged with the code commit that ran it. Interventions are changes a person made to the world's rules.</p>
+      <div id="record"></div>
+    </section>
+  </div>
+
+  <footer id="footer"></footer>
+</main>
+<div class="tip" id="tip"></div>
+
+<script>
+const HC = ["var(--h0)", "var(--h1)", "var(--h2)", "var(--h3)"];
+const ICON = { genesis: "✦", arrival: "→", colonization: "⌂", recolonization: "↺", local_extinction: "✕",
+  shock: "⚡", strategy: "★", innovation: "✚", single_lineage: "◆", generation: "#", global_extinction: "☠",
+  reseed: "✦", intervention: "✋", capped: "!" };
+const FILTERS = [
+  ["All", null], ["Strategies", ["strategy", "innovation"]],
+  ["Habitats", ["arrival", "colonization", "recolonization", "local_extinction"]],
+  ["Shocks", ["shock"]], ["Lineages", ["single_lineage", "generation", "global_extinction", "reseed"]],
+  ["Interventions", ["intervention"]],
+];
+const svgNS = "http://www.w3.org/2000/svg";
+const tip = document.getElementById("tip");
+const el = (tag, attrs = {}, parent) => {
+  const n = document.createElementNS(svgNS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (parent) parent.appendChild(n);
+  return n;
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const pct = x => (x * 100).toFixed(0) + "%";
+function showTip(html, ev) {
+  tip.innerHTML = html; tip.style.display = "block";
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const hideTip = () => { tip.style.display = "none"; };
+const niceMax = v => { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); return [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].map(k => k * p).find(c => c >= v); };
+function fmtTick(t) { return t >= 10000 ? (t / 1000).toFixed(0) + "k" : t >= 1000 ? (t / 1000).toFixed(1).replace(".0", "") + "k" : String(t); }
+
+/* Generic line chart with crosshair tooltip. */
+function lineChart(host, { xs, series, height = 300, yFmt = v => Math.round(v), yMax, small = false, markers = [], labelEnds = false, tipTitle = t => `Tick ${t}` }) {
+  const W = small ? 300 : 980, H = height;
+  const m = small ? { l: 34, r: 8, t: 8, b: 22 } : { l: 44, r: labelEnds ? 130 : 16, t: 16, b: 30 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const x0 = xs[0] ?? 0, x1 = xs[xs.length - 1] ?? 1;
+  const ymax = yMax ?? niceMax(Math.max(1, ...series.flatMap(s => s.values)));
+  const x = t => m.l + (x1 === x0 ? 0 : (t - x0) / (x1 - x0)) * iw;
+  const y = v => m.t + ih - (v / ymax) * ih;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+  const niceStep = st => { const p = Math.pow(10, Math.floor(Math.log10(st))); return [1, 2, 2.5, 5, 10].some(k => Math.abs(st / p - k) < 1e-9); };
+  const ticks = (small ? [2, 3, 4] : [4, 5, 3, 6, 2]).find(n => niceStep(ymax / n)) || (small ? 2 : 4);
+  for (let i = 0; i <= ticks; i++) {
+    const v = (ymax / ticks) * i, yy = y(v);
+    el("line", { x1: m.l, x2: m.l + iw, y1: yy, y2: yy, stroke: i ? "var(--grid)" : "var(--axis)" }, svg);
+    el("text", { x: m.l - 6, y: yy + 4, "text-anchor": "end" }, svg).textContent = yFmt(v);
+  }
+  const nx = small ? 2 : 5;
+  for (let i = 0; i <= nx; i++) {
+    const t = x0 + ((x1 - x0) * i) / nx;
+    el("text", { x: x(t), y: H - (small ? 6 : 10), "text-anchor": i === 0 ? "start" : i === nx ? "end" : "middle" }, svg).textContent = fmtTick(Math.round(t));
+  }
+  markers.forEach(mk => {
+    if (mk.kind === "line") el("line", { x1: x(mk.t), x2: x(mk.t), y1: m.t, y2: m.t + ih, stroke: "var(--muted)", "stroke-dasharray": "4 4" }, svg);
+    else el("path", { d: `M${x(mk.t) - 4},${m.t - 12} L${x(mk.t) + 4},${m.t - 12} L${x(mk.t)},${m.t - 5} Z`, fill: mk.color }, svg);
+  });
+  series.forEach(s => {
+    el("polyline", { points: s.values.map((v, i) => `${x(xs[i])},${y(v)}`).join(" "), fill: "none", stroke: s.color,
+      "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }, svg);
+  });
+  if (labelEnds) {
+    const ends = series.map(s => ({ s, yy: y(s.values[s.values.length - 1]), v: s.values[s.values.length - 1] })).sort((a, b) => a.yy - b.yy);
+    for (let i = 1; i < ends.length; i++) if (ends[i].yy - ends[i - 1].yy < 15) ends[i].yy = ends[i - 1].yy + 15;
+    ends.forEach(e => {
+      el("circle", { cx: x(x1), cy: y(e.v), r: 4, fill: e.s.color, stroke: "var(--surface)", "stroke-width": 2 }, svg);
+      el("text", { x: x(x1) + 10, y: e.yy + 4, class: "lbl" }, svg).textContent = e.s.name;
+    });
+  }
+  const cross = el("line", { y1: m.t, y2: m.t + ih, stroke: "var(--axis)", visibility: "hidden" }, svg);
+  const dots = series.map(s => el("circle", { r: 4, fill: s.color, stroke: "var(--surface)", "stroke-width": 2, visibility: "hidden" }, svg));
+  const hit = el("rect", { x: m.l, y: m.t, width: iw, height: ih, fill: "transparent" }, svg);
+  hit.addEventListener("mousemove", ev => {
+    const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const target = x0 + ((p.x - m.l) / iw) * (x1 - x0);
+    let i = 0, best = Infinity;
+    xs.forEach((t, j) => { const d = Math.abs(t - target); if (d < best) { best = d; i = j; } });
+    cross.setAttribute("x1", x(xs[i])); cross.setAttribute("x2", x(xs[i])); cross.setAttribute("visibility", "visible");
+    let html = `<b>${tipTitle(xs[i])}</b>`;
+    series.forEach((s, k) => {
+      dots[k].setAttribute("cx", x(xs[i])); dots[k].setAttribute("cy", y(s.values[i])); dots[k].setAttribute("visibility", "visible");
+      html += `<div class="row"><span>${series.length > 1 ? `<span style="color:${s.color}">●</span> ` : ""}${esc(s.name)}</span><b>${yFmt(s.values[i])}</b></div>`;
+    });
+    showTip(html, ev);
+  });
+  hit.addEventListener("mouseleave", () => { hideTip(); cross.setAttribute("visibility", "hidden"); dots.forEach(d => d.setAttribute("visibility", "hidden")); });
+  host.appendChild(svg);
+}
+
+function habitatMap(d) {
+  const W = 460, H = 360, pos = [[230, 70], [390, 180], [230, 290], [70, 180]];
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Habitat map" });
+  d.links.forEach(([a, b]) => el("line", { x1: pos[a][0], y1: pos[a][1], x2: pos[b][0], y2: pos[b][1], stroke: "var(--axis)", "stroke-width": 2, "stroke-dasharray": "2 5", "stroke-linecap": "round" }, svg));
+  d.habitats.forEach((h, i) => {
+    const [cx, cy] = pos[i];
+    const r = 14 + 34 * Math.sqrt(h.population / h.capacity);
+    const g = el("g", {}, svg);
+    el("circle", { cx, cy, r: 50, fill: "transparent", stroke: "var(--grid)", "stroke-width": 1 }, g);
+    el("circle", { cx, cy, r, fill: h.population ? HC[i] : "transparent", "fill-opacity": 0.85, stroke: HC[i], "stroke-width": 2 }, g);
+    el("text", { x: cx, y: cy + 4, "text-anchor": "middle", class: "lbl-strong", style: h.population ? "fill:#fff" : "" }, g).textContent = h.population;
+    const ly = i === 2 ? cy + 66 : i === 0 ? cy - 58 : cy + 66;
+    el("text", { x: cx, y: ly, "text-anchor": "middle", class: "lbl" }, g).textContent = h.name;
+    const famTop = d.families[h.family_share.indexOf(Math.max(...h.family_share))];
+    g.addEventListener("mousemove", ev => showTip(
+      `<b>${esc(h.name)}</b> · ${h.status}<div class="row"><span>Population</span><b>${h.population} / ${h.capacity}</b></div>` +
+      `<div class="row"><span>Mean energy</span><b>${h.mean_energy.toFixed(2)}</b></div>` +
+      `<div class="row"><span>Mostly</span><b>${famTop}</b></div>` +
+      `<div class="row"><span>Lineages here</span><b>${h.lineages.map(l => "L" + l).join(", ") || "–"}</b></div>` +
+      (h.top_shape ? `<div style="margin-top:6px">Top shape (${pct(h.top_shape.share)}):<br><code class="prog">${esc(h.top_shape.shape)}</code></div>` : ""), ev));
+    g.addEventListener("mouseleave", hideTip);
+  });
+  document.getElementById("map").appendChild(svg);
+}
+
+function heat(d) {
+  let rows = `<tr><th>Habitat</th>${d.families.map(f => `<th class="num">${f}</th>`).join("")}</tr>`;
+  d.habitats.forEach((h, i) => {
+    rows += `<tr><td><span style="color:${HC[i]}">●</span> ${esc(h.name)}</td>` + h.family_share.map(v => {
+      const a = Math.min(1, v / 0.8);
+      const bg = `color-mix(in oklab, var(--seq) ${Math.round(a * 85)}%, transparent)`;
+      const fg = a > 0.55 ? "#fff" : "var(--ink)";
+      return `<td class="cell" style="background:${bg};color:${fg}">${pct(v)}</td>`;
+    }).join("") + "</tr>";
+  });
+  document.getElementById("heat").innerHTML = rows;
+}
+
+function charts(d) {
+  const nH = d.habitats.length;
+  const byTick = new Map();
+  d.habitat_history.forEach(r => { if (!byTick.has(r[0])) byTick.set(r[0], []); byTick.get(r[0])[r[1]] = r; });
+  const xs = [...byTick.keys()].sort((a, b) => a - b).filter(t => byTick.get(t).filter(Boolean).length === nH);
+  const shocks = d.events.filter(e => e.kind === "shock").map(e => ({ t: e.tick, color: HC[e.data.habitat] }));
+  const inter = d.events.filter(e => e.kind === "intervention").map(e => ({ t: e.tick, kind: "line" }));
+  lineChart(document.getElementById("pop-chart"), {
+    xs, height: 320, labelEnds: true, markers: [...shocks, ...inter],
+    series: d.habitats.map((h, i) => ({ name: h.name, color: HC[i], values: xs.map(t => byTick.get(t)[i][2]) })),
+  });
+  document.getElementById("pop-legend").innerHTML = d.habitats.map((h, i) => `<span><i style="background:${HC[i]}"></i>${esc(h.name)}</span>`).join("");
+
+  const smalls = document.getElementById("smalls");
+  d.families.forEach((f, k) => {
+    const vals = xs.map(t => { const rows = byTick.get(t); const tot = rows.reduce((s, r) => s + r[6].reduce((a, b) => a + b, 0), 0); return tot ? rows.reduce((s, r) => s + r[6][k], 0) / tot : 0; });
+    const box = document.createElement("div");
+    box.innerHTML = `<h3>${f}</h3><p class="now">now ${pct(vals[vals.length - 1] || 0)} of actions</p>`;
+    smalls.appendChild(box);
+    lineChart(box, { xs, small: true, height: 130, yMax: Math.max(0.1, Math.ceil(Math.max(...vals) * 10) / 10), yFmt: pct, series: [{ name: f, color: "var(--seq)", values: vals }] });
+  });
+  const wx = d.world_history.map(r => r[0]);
+  const box = document.createElement("div");
+  box.innerHTML = `<h3>Strategy shapes alive</h3><p class="now">now ${d.totals.strategy_shapes}</p>`;
+  smalls.appendChild(box);
+  lineChart(box, { xs: wx, small: true, height: 130, series: [{ name: "Shapes", color: "var(--seq)", values: d.world_history.map(r => r[2]) }] });
+}
+
+function strategies(d) {
+  let rows = `<tr><th class="num">Agents</th><th>Example program</th><th class="num">Mean gen.</th><th>Where</th></tr>`;
+  d.strategies.forEach(s => {
+    rows += `<tr><td class="num">${s.count}</td><td><code class="prog">${esc(s.example).replace(/; /g, ";<br>")}</code></td><td class="num">${s.mean_gen}</td><td>${s.habitats.map(esc).join(", ")}</td></tr>`;
+  });
+  document.getElementById("strategies").innerHTML = rows;
+}
+
+function feed(d) {
+  const fbox = document.getElementById("filters"), list = document.getElementById("feed");
+  let active = 0;
+  const render = () => {
+    const kinds = FILTERS[active][1];
+    const evs = d.events.filter(e => !kinds || kinds.includes(e.kind)).slice().reverse();
+    list.innerHTML = evs.map(e => `<li><span class="t">t ${e.tick.toLocaleString()}</span><span class="ic" aria-hidden="true">${ICON[e.kind] || "·"}</span><span>${esc(e.text).replace(/: (if .*|else .*)$/, ': <code class="prog">$1</code>')}</span></li>`).join("") || "<li><span></span><span></span><span>Nothing yet.</span></li>";
+    fbox.querySelectorAll("button").forEach((b, i) => b.setAttribute("aria-pressed", i === active));
+  };
+  fbox.innerHTML = FILTERS.map(([n]) => `<button type="button">${n}</button>`).join("");
+  fbox.querySelectorAll("button").forEach((b, i) => b.addEventListener("click", () => { active = i; render(); }));
+  render();
+}
+
+function record(d) {
+  document.getElementById("lineages").innerHTML = `<tr><th>Lineage</th><th class="num">Alive</th><th class="num">Generations</th><th>Where</th></tr>` +
+    d.lineages.map(l => `<tr><td>L${l.id}${l.epoch > 1 ? ` (epoch ${l.epoch})` : ""}</td><td class="num">${l.alive}</td><td class="num">${l.max_gen}</td><td>${l.habitats.map(esc).join(", ")}</td></tr>`).join("") +
+    `<tr><td colspan="4" style="color:var(--ink-2)">${d.totals.lineages_extinct} lineage${d.totals.lineages_extinct === 1 ? "" : "s"} extinct.</td></tr>`;
+  const inter = d.interventions.length
+    ? `<p><b>${d.interventions.length} intervention${d.interventions.length === 1 ? "" : "s"}.</b> ${d.interventions.map(i => `Tick ${i.tick} (${esc(i.at)})`).join("; ")}</p>`
+    : `<p><b>No interventions.</b> The world has run untouched by people since tick 0.</p>`;
+  const adv = d.advances.slice().reverse().slice(0, 8).map(a => `<tr><td>${esc(a.at)}</td><td class="num">${a.from.toLocaleString()} → ${a.to.toLocaleString()}</td><td><code class="prog">${esc(String(a.commit).slice(0, 7))}</code></td></tr>`).join("");
+  document.getElementById("record").innerHTML = inter + `<div class="scroll"><table><tr><th>Advance</th><th class="num">Ticks</th><th>Code</th></tr>${adv}</table></div>`;
+}
+
+fetch("longrun.json").then(r => r.json()).then(d => {
+  const t = d.totals;
+  document.getElementById("asof").textContent = `World created ${d.created_at}. Last advanced ${d.generated_at}.`;
+  const tiles = [
+    ["Tick", d.tick.toLocaleString(), d.epoch > 1 ? `epoch ${d.epoch}` : "epoch 1, never reset"],
+    ["Living agents", t.alive.toLocaleString(), `${t.births.toLocaleString()} born in total`],
+    ["Generations", t.max_generation, "deepest living line"],
+    ["Strategy shapes", t.strategy_shapes, `${t.shapes_ever_spread} have spread to ≥10%`],
+    ["Lineages", t.lineages_alive, `of ${t.lineages_alive + t.lineages_extinct} founders`],
+    ["Interventions", d.interventions.length, d.interventions.length ? "see record" : "untouched"],
+  ];
+  document.getElementById("tiles").innerHTML = tiles.map(([k, v, s]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("");
+  habitatMap(d); heat(d); charts(d); strategies(d); feed(d); record(d);
+  document.getElementById("footer").innerHTML =
+    `Closed simulation: habitats, migration and agents are in-memory records only; nothing runs outside the simulator. ` +
+    `See <a href="https://github.com/PrototypeVersions/AI_Evolution_c/blob/main/SAFETY.md">SAFETY.md</a>. Data: <a href="longrun.json">longrun.json</a>.`;
+}).catch(err => { document.getElementById("asof").textContent = "No world data yet. Run python -m longrun.advance."; console.error(err); });
+</script>
+</body>
+</html>

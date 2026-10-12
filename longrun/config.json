@@ -1,0 +1,19 @@
+{
+  "seed": 20261012,
+  "n_arch": 5,
+  "max_age": 60,
+  "founders": 10,
+  "founder_habitat": 0,
+  "reseed_on_global_extinction": true,
+  "max_population": 3000,
+  "max_ticks_per_advance": 5000,
+  "max_seconds_per_advance": 600,
+  "sample_every": 20,
+  "habitats": [
+    {"name": "Stable Plains",   "n_nodes": 60, "drift": 0.0,   "shock_prob": 0.0,   "regen": 0.20, "metabolism": 1.0, "harshness": 0.1},
+    {"name": "Drifting Coast",  "n_nodes": 60, "drift": 0.01,  "shock_prob": 0.0,   "regen": 0.20, "metabolism": 1.0, "harshness": 0.2},
+    {"name": "Shock Valley",    "n_nodes": 60, "drift": 0.0,   "shock_prob": 0.004, "regen": 0.25, "metabolism": 1.0, "harshness": 0.3},
+    {"name": "Harsh Highlands", "n_nodes": 45, "drift": 0.003, "shock_prob": 0.001, "regen": 0.12, "metabolism": 1.5, "harshness": 0.5}
+  ],
+  "links": [[0, 1], [1, 2], [2, 3], [3, 0]]
+}

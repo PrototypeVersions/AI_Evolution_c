@@ -7,10 +7,16 @@ constraints, not just conventions, and should be preserved in any future work.
 
 - Models an abstract population of agents on abstract "nodes" that are plain
   in-memory Python objects.
-- The agents' entire action vocabulary is `OBSERVE, MOVE, TEST, REPLICATE,
-  RECORD, WAIT`. Each one only reads or mutates the in-memory simulator state.
+- In the study engine (`sim/`), the agents' entire action vocabulary is `OBSERVE, MOVE, TEST, REPLICATE,
+  RECORD, WAIT`; in the long run (`longrun/`) it is `CONSUME, REST, REPLICATE,
+  TEST, READ, SHARE, MIGRATE, MOVE, STEAL`. Each one only reads or mutates the
+  in-memory simulator state.
 - `REPLICATE(node)` appends a new agent record to a Python list. Nothing is
   installed, copied, or started anywhere.
+- In the long-run world, `MIGRATE` and `MOVE` change which in-memory habitat
+  or node an agent record points to. Habitats are simulated regions, not
+  machines, and the long run will not be extended to run agents across real
+  or volunteer computers.
 
 ## What the code does not do, and must not be extended to do
 
