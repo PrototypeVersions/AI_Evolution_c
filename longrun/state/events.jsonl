@@ -1,0 +1,45 @@
+{"tick":0,"epoch":1,"kind":"genesis","text":"World created: 4 habitats, 10 founders in Stable Plains.","data":{}}
+{"tick":20,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 14% of agents: if energy>\u00b7: REPLICATE; if crowding>\u00b7: CONSUME; else CONSUME","data":{"shape":"if energy>\u00b7: REPLICATE; if crowding>\u00b7: CONSUME; else CONSUME"}}
+{"tick":21,"epoch":1,"kind":"arrival","text":"First agents ever reach Drifting Coast (lineage L3).","data":{"habitat":1,"lineage":3}}
+{"tick":57,"epoch":1,"kind":"arrival","text":"First agents ever reach Harsh Highlands (lineage L8).","data":{"habitat":3,"lineage":8}}
+{"tick":58,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":60,"epoch":1,"kind":"strategy","text":"Most common strategy shape (55% of agents): if energy>\u00b7: REPLICATE; else CONSUME","data":{"shape":"if energy>\u00b7: REPLICATE; else CONSUME","share":0.554}}
+{"tick":209,"epoch":1,"kind":"arrival","text":"First agents ever reach Shock Valley (lineage L4).","data":{"habitat":2,"lineage":4}}
+{"tick":280,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 13% of agents: if energy>\u00b7: REPLICATE; if crowding<\u00b7: CONSUME; else CONSUME","data":{"shape":"if energy>\u00b7: REPLICATE; if crowding<\u00b7: CONSUME; else CONSUME"}}
+{"tick":320,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 12% of agents: if energy>\u00b7: REPLICATE; if belief>\u00b7: REST; else CONSUME","data":{"shape":"if energy>\u00b7: REPLICATE; if belief>\u00b7: REST; else CONSUME"}}
+{"tick":343,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":663,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":696,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":794,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":820,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 12% of agents: if energy>\u00b7: REPLICATE; if crowding<\u00b7: TEST; else CONSUME","data":{"shape":"if energy>\u00b7: REPLICATE; if crowding<\u00b7: TEST; else CONSUME"}}
+{"tick":846,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":987,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":1040,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 11% of agents: if energy>\u00b7: CONSUME; if energy>\u00b7: REPLICATE; else CONSUME","data":{"shape":"if energy>\u00b7: CONSUME; if energy>\u00b7: REPLICATE; else CONSUME"}}
+{"tick":1180,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 10% of agents: if energy>\u00b7: REPLICATE; if crowding<\u00b7: SHARE; else CONSUME","data":{"shape":"if energy>\u00b7: REPLICATE; if crowding<\u00b7: SHARE; else CONSUME"}}
+{"tick":1320,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 13% of agents: if energy>\u00b7: TEST; if energy>\u00b7: REPLICATE; else CONSUME","data":{"shape":"if energy>\u00b7: TEST; if energy>\u00b7: REPLICATE; else CONSUME"}}
+{"tick":1357,"epoch":1,"kind":"colonization","text":"Harsh Highlands is settled for the first time, after 17 attempts.","data":{"habitat":3}}
+{"tick":1500,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 11% of agents: if energy>\u00b7: REPLICATE; if crowding>\u00b7: MIGRATE; else CONSUME","data":{"shape":"if energy>\u00b7: REPLICATE; if crowding>\u00b7: MIGRATE; else CONSUME"}}
+{"tick":1538,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":1551,"epoch":1,"kind":"colonization","text":"Shock Valley is settled for the first time, after 19 attempts.","data":{"habitat":2}}
+{"tick":1587,"epoch":1,"kind":"colonization","text":"Drifting Coast is settled for the first time, after 28 attempts.","data":{"habitat":1}}
+{"tick":1929,"epoch":1,"kind":"single_lineage","text":"Only one founding lineage (L7) survives; every living agent descends from it.","data":{"lineage":7}}
+{"tick":2177,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":2294,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":2353,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":2510,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":2515,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":2541,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":2711,"epoch":1,"kind":"generation","text":"Generation 100 reached.","data":{}}
+{"tick":2942,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":3440,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 11% of agents: if energy>\u00b7: REPLICATE; if resource<\u00b7: STEAL; else CONSUME","data":{"shape":"if energy>\u00b7: REPLICATE; if resource<\u00b7: STEAL; else CONSUME"}}
+{"tick":3496,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":3565,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":3948,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":4055,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":4260,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 11% of agents: if energy>\u00b7: REPLICATE; if resource<\u00b7: MOVE; else CONSUME","data":{"shape":"if energy>\u00b7: REPLICATE; if resource<\u00b7: MOVE; else CONSUME"}}
+{"tick":4316,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":4349,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":4517,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":4707,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":4727,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":4962,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
