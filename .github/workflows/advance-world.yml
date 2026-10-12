@@ -1,0 +1,44 @@
+# Advances the persistent world once a day, commits the new checkpoint, and
+# republishes the viewer. Runs only on the default branch (main).
+name: advance-world
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+    inputs:
+      ticks:
+        description: "Ticks to advance (max set in longrun/config.json)"
+        default: "4000"
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: advance-world
+  cancel-in-progress: false
+jobs:
+  advance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Advance the world
+        env:
+          TICKS: ${{ github.event.inputs.ticks || '4000' }}
+        run: python -m longrun.advance --ticks "$TICKS"
+      - name: Commit the new checkpoint
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add longrun/state docs/longrun.json
+          if git diff --cached --quiet; then exit 0; fi
+          TICK=$(python -c 'import json; print(json.load(open("docs/longrun.json"))["tick"])')
+          git commit -m "world: advance to tick $TICK"
+          git push
+  publish:
+    needs: advance
+    uses: ./.github/workflows/pages.yml

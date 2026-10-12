@@ -57,14 +57,36 @@ for that node's `arch`. The environment can **shift** partway through a run
 a trap. The measured outcome is the **reproductive number R** (mean successful
 descendants per agent) plus population survival and how strategies change.
 
+## The long run
+
+Alongside the controlled studies there is one **persistent world** (`longrun/`)
+that is never reset. Four habitats with different conditions (stable, drifting,
+shock-prone, harsh) are linked by migration routes. Agents carry a small
+behaviour *program* — an ordered list of `if <feature> <op> <threshold>:
+<ACTION>` rules plus a default — and mutation can add, delete, and rewire rules,
+so strategy structure itself evolves. Agents forage on limited, regrowing
+resources, reproduce, test and share knowledge, move, migrate, and can steal
+energy from neighbours on the same node.
+
+A scheduled GitHub Action advances the world once a day from its checkpoint,
+commits the new state, and republishes the viewer (`docs/world.html`). Advances
+are deterministic: resuming from a checkpoint gives exactly the same history as
+an uninterrupted run (tested). Any change to `longrun/config.json` after the
+world starts is logged as an **intervention** and shown on the viewer.
+
+A single long run is a sample of one: it is for watching and for generating
+hypotheses. Claims about *why* something happens belong in controlled,
+replicated studies (`experiments/`).
+
 ## Layout
 
 ```
-sim/            simulation engine (world, agent, engine) — pure, deterministic given a seed
+sim/            study engine (world, agent, engine) — pure, deterministic given a seed
 experiments/    immutable records (SQLite), batch runner, analysis, the studies
 dashboard/      report generator: results -> docs/ data for GitHub Pages
-docs/           the static dashboard published to GitHub Pages
-tests/          sanity + reproducibility tests
+longrun/        the persistent multi-habitat world, its checkpoint (state/), and the daily advance
+docs/           static site for GitHub Pages: index.html (studies), world.html (the long run)
+tests/          reproducibility, containment, and persistence tests
 ```
 
 ## Running it
@@ -81,7 +103,10 @@ python -m experiments.analysis
 # regenerate the static dashboard under docs/ from the results database
 python -m dashboard.generate
 
-# sanity + reproducibility tests
+# advance the persistent world (continues from longrun/state/)
+python -m longrun.advance --ticks 4000
+
+# tests
 python -m unittest discover -s tests
 ```
 
