@@ -98,3 +98,17 @@ never rewritten; corrections are new entries.
     - NOVEL: plasticity on reserved two-bit skills.
   - Calibration of S now measures the climbing pace.
   - All of this is written in `PREREGISTRATION_v2.md` before any v2 run.
+
+## 2026-10-13 ~01:40 — v2 calibration
+
+- **First attempt.** One new skill per era. The single climbing learner was
+  stuck (more than 3,000 steps) in 16% of eras, because half of new skills
+  were never presented before their children arrived.
+- **Fix.** New skills are now always presented on arrival, and calibration
+  climbs at the grid's fastest pace (a new skill every 2 eras).
+- **Second attempt.**
+  - Learning rate 3e-3.
+  - K = 50 (fresh NOVEL accuracy 70%).
+  - Median climbing step 300; 90th percentile about 1,200.
+  - S = 800, the largest candidate. It still misses the 90% rule (83%).
+  - Logged as v2 deviation 1.

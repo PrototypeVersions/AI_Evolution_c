@@ -26,7 +26,7 @@
     ]
   },
   "lr": 0.003,
-  "steps_per_era": 200,
+  "steps_per_era": 800,
   "probe_steps": 50,
   "frozen": false
 }

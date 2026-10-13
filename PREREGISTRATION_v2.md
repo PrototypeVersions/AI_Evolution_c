@@ -230,4 +230,24 @@ There is no networking, no external model, and no code generation. See
 
 ## Deviations
 
-*(none yet)*
+1. **2026-10-13, during calibration, before any arm was run on the v2 world.**
+   - **First calibration attempt.** It followed §7 at one new skill per era.
+     The single climbing learner needed more than 3,000 steps in 16% of eras
+     (`paper/exploratory/calibration_v2a.json`).
+   - **Cause.** A new skill was presented on arrival only half the time, so
+     its child often appeared before the skill had ever been practised. The
+     learner then faced a two- or three-bit leap rather than a step.
+   - **Fixes:**
+     - every new skill is now part of the task in the era it arrives;
+     - the climbing learner follows the grid's fastest pace (a new skill
+       every 2 eras, 32 eras) instead of one per era, which no regime uses.
+   - **Second calibration** (`learners/calibration.json`):
+     - learning rate 3e-3 (median 125 steps for a fresh root pair);
+     - K = 50 (fresh NOVEL accuracy 70%);
+     - the climbing steps had a median of 300 and a 90th percentile of
+       about 1,200 steps.
+   - **S = 800.** No candidate met the 90% rule (100: 20%; 200: 38%; 300:
+     54%; 500: 70%; 800: 83%). S was therefore set to the largest candidate,
+     800, under which 83% of climbing eras finish within one era. The
+     climbing learner itself trains continuously, so some of its slow eras
+     probably reflect its own loss of plasticity.

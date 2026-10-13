@@ -128,8 +128,9 @@ class Restart(Arm):
 
 
 class Teach(Arm):
-    """A fresh child learns to reproduce its parent's hidden activations and
-    outputs on random inputs, using half of the birth era's budget."""
+    """A fresh child learns to reproduce its parent's last-hidden-layer
+    features and outputs on random inputs, using half of the birth era's
+    budget. Weights are never copied."""
     name = "TEACH"
 
     def lifecycle(self, world, era):

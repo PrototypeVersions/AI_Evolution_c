@@ -138,15 +138,17 @@ class MLP:
         self.adam()
         return acc
 
-    def teach_step(self, teacher: "MLP", x: np.ndarray) -> None:
-        """Match the teacher's hidden activations (MSE, normalised by the
-        teacher's mean squared activation) and output distribution (KL)."""
+    def teach_step(self, teacher: "MLP", x: np.ndarray, layers=None) -> None:
+        """Match the teacher's output distribution (KL) and the activations of
+        the given hidden layers (MSE, normalised by the teacher's mean squared
+        activation). By default only the last hidden layer is matched, so the
+        child learns the parent's features but builds its own machinery."""
         t_acts, t_logits = teacher.forward(x)
         acts, logits = self.forward(x)
         n = len(x)
         d = (softmax(logits) - softmax(t_logits)) / n
         extra = {}
-        for l in range(1, len(acts)):
+        for l in (layers if layers is not None else [len(acts) - 1]):
             target = t_acts[l]
             scale = 1.0 / (float(np.mean(target * target)) + 1e-8)
             extra[l] = 2.0 * scale * (acts[l] - target) / (n * target.shape[1])
@@ -155,6 +157,10 @@ class MLP:
 
     def accuracy(self, x: np.ndarray, y: np.ndarray) -> float:
         return float((self.forward(x)[1].argmax(axis=1) == y).mean())
+
+    def features(self, x: np.ndarray) -> np.ndarray:
+        """Activations of the last hidden layer."""
+        return self.forward(x)[0][-1]
 
     def shrink_perturb(self, rng: np.random.Generator, shrink: float, noise: float) -> None:
         """theta <- shrink * theta + noise * (fresh initial weights); in place."""

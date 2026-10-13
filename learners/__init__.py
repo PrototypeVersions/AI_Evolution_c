@@ -5,4 +5,4 @@ equal compute budget; arms differ only in their life history (see
 PREREGISTRATION.md). Everything runs in-process on synthetic data.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
