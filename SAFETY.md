@@ -5,12 +5,14 @@ constraints, not just conventions, and should be preserved in any future work.
 
 ## What the code does
 
-- Models an abstract population of agents on abstract "nodes" that are plain
-  in-memory Python objects.
-- In the study engine (`sim/`), the agents' entire action vocabulary is `OBSERVE, MOVE, TEST, REPLICATE,
-  RECORD, WAIT`; in the long run (`longrun/`) it is `CONSUME, REST, REPLICATE,
-  TEST, READ, SHARE, MIGRATE, MOVE, STEAL`. Each one only reads or mutates the
-  in-memory simulator state.
+- Study 1 (`learners/`) trains small numpy neural networks on synthetic
+  random bit vectors. The networks only classify; they produce no code, take
+  no actions, and touch nothing outside their own arrays. "Reproduction" means
+  creating a new array of weights in memory.
+- The ecology world (`longrun/`) models an abstract population of agents on
+  abstract "nodes" that are plain in-memory Python objects. The agents' entire
+  action vocabulary is `CONSUME, REST, REPLICATE, TEST, READ, SHARE, MIGRATE,
+  MOVE, STEAL`. Each one only reads or mutates the in-memory simulator state.
 - `REPLICATE(node)` appends a new agent record to a Python list. Nothing is
   installed, copied, or started anywhere.
 - In the long-run world, `MIGRATE` and `MOVE` change which in-memory habitat
@@ -30,10 +32,11 @@ constraints, not just conventions, and should be preserved in any future work.
 
 ## Enforced limits
 
-Every run is bounded by hard caps (see `sim/engine.py`): a maximum population,
-a maximum number of steps, and a maximum wall-clock budget. A run that hits a
-cap stops and is recorded as capped, so a configuration cannot expand without
-limit.
+- **Study 1.** Every run has a fixed number of eras and an exact compute
+  budget per era, checked by a test. Populations are fixed at four networks.
+- **The ecology world.** Each daily advance runs a fixed number of ticks.
+  Population is capped (`max_population` in `longrun/config.json`) and
+  limited by finite, regrowing resources.
 
 ## Optional LLM agents (not in v0)
 

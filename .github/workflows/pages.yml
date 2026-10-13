@@ -1,4 +1,4 @@
-# Publishes docs/ (the lab dashboard and the long-run viewer) to GitHub Pages.
+# Publishes docs/ (Study 1 and the ecology-world viewer) to GitHub Pages.
 # One-time setup: Settings -> Pages -> Source: "GitHub Actions".
 name: pages
 on:
