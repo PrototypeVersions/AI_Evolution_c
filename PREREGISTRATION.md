@@ -216,4 +216,29 @@ There is no networking, no external model, and no code generation. See
 
 ## Deviations
 
-*(none yet)*
+Each entry gives the date, what changed, and why. Predictions (§6) and the
+analysis plan (§9) are unchanged unless an entry says otherwise.
+
+1. **2026-10-13, while writing the code, before any arm was run** (except a
+   12-era smoke test on a toy protocol, used only to check the code runs).
+   - **Skill library.** The library is 64 stream skills plus 8 reserved, not
+     40 + 8, and 4 skills are available from era 0. With one new skill every 2
+     eras, 40 skills would run out at era 72 and the fast-novelty regime would
+     stop being novel for its last 48 eras.
+   - **Implementation details the plan did not specify:**
+     - weight decay is an L2 term on every parameter, as in `torch.optim.Adam`;
+     - RESET also resets the Adam state;
+     - population children start with fresh Adam state, except CLONE, which
+       copies it;
+     - IMMORTAL never reproduces, so it is run once per seed and novelty
+       interval and compared with both lifespans.
+   - **Teaching budget.** Integer rounding leaves a TEACH birth era up to one
+     training step under budget (at most 0.7%), never over.
+2. **2026-10-13, calibration** (`learners/calibration.json`, fresh networks
+   only, seeds 1–20) chose:
+   - learning rate 3e-3, with a median of 125 steps to 90% (1e-3: 275 steps;
+     3e-4: 850 steps);
+   - S = 200 steps per era (100 fails the 90% rule; at 200 every task
+     reaches 90%);
+   - K = 50 probe steps, which gives fresh networks 41% on NOVEL probes
+     (K = 100 would give 80%).
