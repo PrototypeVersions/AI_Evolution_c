@@ -70,9 +70,36 @@ def regime_title(reg):
     return f"new skill every {reg['R']} eras · lifespan {reg['L']}"
 
 
-def fig_online(s, out):
+def task_difficulty(phase, R):
+    """Mean size (bits) of the two skills in each era's task, over worlds."""
+    curves = [[(x["world"]["degrees"][a] + x["world"]["degrees"][b]) / 2 for a, b in x["tasks"]]
+              for x in load(phase) if x["arm"] == "SCRATCH" and x["R"] == R]
+    return np.mean(curves, axis=0)
+
+
+def fig_online(phase, s, out):
+    """Accuracy on the current task, under a strip showing how hard the
+    current task is: the stream gets harder, so falling lines mean a learner
+    stopped keeping up, not that it got worse at a fixed task."""
     regs = s["regimes"]
-    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.0), sharex=True, sharey=True)
+    fig = plt.figure(figsize=(7.2, 6.6))
+    gs = fig.add_gridspec(5, 2, height_ratios=[0.3, 1, 0.22, 0.3, 1], hspace=0.12)
+    axes = np.empty((2, 2), dtype=object)
+    for i in range(2):
+        for j in range(2):
+            strip = fig.add_subplot(gs[3 * i, j])
+            axes[i, j] = fig.add_subplot(gs[3 * i + 1, j], sharex=strip)
+            reg = regs[2 * i + j]
+            d = np.convolve(task_difficulty(phase, reg["R"]), np.ones(5) / 5, mode="valid")
+            strip.fill_between(np.arange(len(d)) + 4, 2, d, color="#c8c8c8", linewidth=0)
+            strip.set_ylim(2, 5)
+            strip.set_yticks([2, 5])
+            strip.tick_params(labelbottom=False)
+            strip.set_title(regime_title(reg))
+            if j == 0:
+                strip.set_ylabel("task size\n(bits)", fontsize=7)
+            else:
+                strip.tick_params(labelleft=False)
     for ax, reg in zip(axes.flat, regs):
         ax.axhline(25, color="#888888", linewidth=0.8, linestyle=":")
         for arm in ARMS + SECONDARY:
@@ -80,17 +107,22 @@ def fig_online(s, out):
             if not row or "online_curve" not in row:
                 continue
             y = np.convolve(row["online_curve"], np.ones(5) / 5, mode="valid")
-            ax.plot(np.arange(len(y)) + 5, 100 * y, color=COLORS[arm], label=LABELS[arm],
+            ax.plot(np.arange(len(y)) + 4, 100 * y, color=COLORS[arm], label=LABELS[arm],
                     linestyle=STYLES.get(arm, "-"))
-        ax.set_title(regime_title(reg))
         ax.set_ylim(0, 100)
+        if ax not in axes[:, 0]:
+            ax.tick_params(labelleft=False)
+        if ax not in axes[1]:
+            ax.tick_params(labelbottom=False)
     for ax in axes[1]:
         ax.set_xlabel("era")
     for ax in axes[:, 0]:
         ax.set_ylabel("accuracy on the current task (%)")
     axes[1, 0].text(2, 27, "chance", fontsize=7, color="#888888")
     shared_legend(fig, axes)
-    fig.suptitle("Performance on the stream (mean over seeds, 5-era moving average)", y=1.0)
+    fig.suptitle("Performance on a stream that keeps getting harder\n"
+                 "grey: mean size of the current task's skills · lines: accuracy on that task\n"
+                 "(mean over seeds, trailing 5-era average)", y=1.0, fontsize=9)
     save(fig, out, "fig1_online")
 
 
@@ -210,7 +242,7 @@ def main(argv=None):
     out = os.path.join(ROOT, "paper", "figures", args.phase)
     os.makedirs(out, exist_ok=True)
     s = analyse(args.phase)
-    fig_online(s, out)
+    fig_online(args.phase, s, out)
     fig_trajectories(s, out)
     fig_paired(args.phase, s, out)
     fig_skill_map(args.phase, out)
