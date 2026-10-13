@@ -112,3 +112,32 @@ never rewritten; corrections are new entries.
   - Median climbing step 300; 90th percentile about 1,200.
   - S = 800, the largest candidate. It still misses the 90% rule (83%).
   - Logged as v2 deviation 1.
+
+## 2026-10-13 ~02:00 — v2 pilot stopped: the staircase was too steep
+
+- **What happened.** On the first practice world at the fast pace (new
+  skill every 2 eras), every arm collapsed to near chance on the stream after
+  about 40 eras. That included restarts every 5 eras. About 50% of hidden
+  units were dead, and the probes were at chance.
+- **Cause.** New skills extended the newest skill half the time. The trunk
+  reached 8-bit skills by era 20, so after one missed step most tasks were
+  unlearnable. Training on effectively random labels at learning rate 3e-3
+  kills plasticity for everyone.
+- **Fixes** (v2 deviation 2):
+  - Parents are now drawn uniformly, which gives a bushy tree whose depth
+    grows slowly (mean skill about 4.7 bits at era 120 at the fast pace).
+    Skills are capped at 10 bits.
+  - The learning rate and S are now calibrated with the real per-era
+    budget, using a single learner's first 40 eras.
+- **Recalibration** (seeds 1–8):
+  - Learning rate 1e-3, S = 800 and K = 100.
+  - The early accuracy at S = 800 was 94% with learning rate 1e-3 and 89%
+    with 3e-3.
+- **Side observation.** Population representatives with evolved learning
+  rates can score near 100% on NOVEL. The probe uses each network's own
+  learning rate, so the NOVEL probe partly measures the learning rate as well
+  as the state of the weights. Each network's learning rate is recorded, so
+  this can be separated in analysis.
+- **Pilot logistics.** Runs now go to GitHub Actions in 20 parallel shards
+  (`.github/workflows/study1.yml`); results are committed back to the run
+  branch.

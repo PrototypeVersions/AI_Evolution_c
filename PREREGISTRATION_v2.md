@@ -251,3 +251,36 @@ There is no networking, no external model, and no code generation. See
      800, under which 83% of climbing eras finish within one era. The
      climbing learner itself trains continuously, so some of its slow eras
      probably reflect its own loss of plasticity.
+2. **2026-10-13, after the first v2 pilot runs: the world was too steep.**
+   - **What happened.** On the first practice world at the fast pace, every
+     arm collapsed to near chance on the stream after about 40 eras. That
+     included arms that restart every 5 eras. About half of the hidden units
+     were dead, and the probes were at chance. A world in which every life
+     history fails cannot tell them apart.
+   - **Cause.**
+     - New skills extended the newest skill half the time, so the trunk
+       deepened very fast: 8-bit skills by era 20 and 12–16 bits by era 120.
+     - After the first missed step, most later tasks contained skills that
+       could not be learned. Training on what are then effectively random
+       labels, at learning rate 3e-3, destroys plasticity for everyone.
+     - The calibration in deviation 1 gave the climbing learner unlimited
+       compute per era, so it missed this.
+   - **Fixes:**
+     - Parents are now drawn uniformly from existing skills, which gives a
+       bushy tree whose depth grows slowly. At the fast pace, the mean skill
+       size at era 120 is about 4.7 bits and the largest about 8; at the
+       slow pace, 3.9 and 6.7. Skills are capped at 10 bits.
+     - Calibration of the learning rate and S now uses the real per-era
+       budget. A single continually trained learner with S steps per era
+       follows the first 40 eras at the fast pace (seeds 1–8).
+       - For each S in {200, 400, 800}, take the learning rate in {3e-4,
+         1e-3, 3e-3} that gives it the highest mean end-of-era accuracy.
+       - S is the smallest value where that accuracy reaches 85%.
+       - This gives the immortal learner its best footing, which is the
+         conservative choice for the headline hypothesis.
+   - **What stays the same.** K keeps its rule. Hypotheses, arms, measures
+     and analysis are unchanged.
+   - **The steep-world runs.** They are kept in
+     `learners/results/pilot_v2a_too_steep.jsonl`.
+   - **Disclosure.** I noticed this while looking at results across arms.
+     The trigger, every arm near chance, favours none of them.

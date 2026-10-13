@@ -2,7 +2,7 @@
 
 Inputs are 32 random ±1 bits. A *skill* is the parity (product) of a set of
 input bits. The world starts with a few two-bit skills; every R eras a new
-skill appears that extends an existing skill by one more bit. Learning a
+skill appears that extends a uniformly chosen existing skill by one more bit. Learning a
 high-order parity from scratch is very hard for gradient descent, but learning
 it one bit at a time is easy (the "staircase" property: Abbe, Boix-Adsera and
 Misiakiewicz, 2022). So in this world knowledge compounds: a learner that keeps
@@ -25,10 +25,10 @@ import numpy as np
 
 N_BITS = 32
 N_ROOTS = 4          # two-bit skills available from era 0
-MAX_DEGREE = 16      # a skill never covers more than half the input bits
+MAX_DEGREE = 10      # the deepest skill the world will ever ask for
 N_RESERVED = 8       # two-bit skills never streamed: NOVEL probe material
 N_PROBE = 6          # probe tasks of each kind per checkpoint
-P_EXTEND_NEWEST = 0.5
+P_EXTEND_NEWEST = 0.0  # parents are drawn uniformly: a bushy tree whose depth grows slowly
 P_TASK_NEWEST = 0.5
 
 Task = Tuple[int, int]

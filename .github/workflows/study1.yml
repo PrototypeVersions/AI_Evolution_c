@@ -1,0 +1,62 @@
+name: study1
+# Runs a batch of Study 1 (see PREREGISTRATION_v2.md) across 20 machines.
+# Push a branch named run/study1-<anything> containing learners/batch.json,
+# e.g. {"phase": "pilot", "seeds": "100-109"}. The results are committed back
+# to that branch as learners/results/<phase>.jsonl.
+on:
+  push:
+    branches: ["run/study1-*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy==2.2.6
+      - name: Run this shard
+        run: |
+          PHASE=$(python -c "import json;print(json.load(open('learners/batch.json'))['phase'])")
+          SEEDS=$(python -c "import json;print(json.load(open('learners/batch.json'))['seeds'])")
+          python -m learners.run --phase "$PHASE" --seeds "$SEEDS" --shard ${{ matrix.shard }}/20 --procs 4
+          mv "learners/results/$PHASE.jsonl" "shard-${{ matrix.shard }}.jsonl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shard-${{ matrix.shard }}
+          path: shard-${{ matrix.shard }}.jsonl
+          retention-days: 30
+
+  collect:
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: shards
+      - name: Merge shards and commit
+        run: |
+          PHASE=$(python -c "import json;print(json.load(open('learners/batch.json'))['phase'])")
+          mkdir -p learners/results
+          cat shards/*/shard-*.jsonl >> "learners/results/$PHASE.jsonl"
+          wc -l "learners/results/$PHASE.jsonl"
+          git config user.name "study1-runner"
+          git config user.email "study1-runner@users.noreply.github.com"
+          git add "learners/results/$PHASE.jsonl"
+          git commit -m "study1: $PHASE results from run ${{ github.run_id }}"
+          git push
