@@ -1,7 +1,8 @@
-"""Run Study 1: one (seed, arm, regime) at a time, records appended to JSONL.
+"""Run Study 1 or 1b: one (seed, arm, regime) at a time, records appended to JSONL.
 
     python -m learners.run --phase pilot --seeds 100-109
     python -m learners.run --phase confirmation --seeds 7000-7029
+    python -m learners.run --phase pilot_1b --seeds 300-304 --protocol learners/protocol_1b.json
 
 Each line of learners/results/<phase>.jsonl is one immutable run record
 carrying the code commit and protocol hash it was produced with. Re-running
@@ -28,6 +29,7 @@ os.environ.setdefault("MKL_NUM_THREADS", "1")
 import numpy as np  # noqa: E402
 
 from . import __version__  # noqa: E402
+from . import arms_1b  # noqa: E402
 from .arms import ARMS, FWD  # noqa: E402
 from .net import MLP, fresh_weight  # noqa: E402
 from .world import SkillWorld, random_inputs  # noqa: E402
@@ -147,11 +149,17 @@ def summary(probes: Dict, last: int) -> Dict:
 
 
 # ---- runs -----------------------------------------------------------------
+def make_arm(seed: int, arm: str, R: int, L: int, proto: Dict):
+    if proto.get("study") == "1b":
+        return arms_1b.make(arm, seed, R, L, proto)
+    rng = np.random.default_rng([seed, 10, R, L, ARM_ORDER.index(arm)])
+    return ARMS[arm](proto, rng, L if L else 10 ** 9)
+
+
 def run_one(seed: int, arm: str, R: int, L: int, proto: Dict) -> Dict:
     t0 = time.time()
     world = SkillWorld(seed, R, proto["n_eras"])
-    rng = np.random.default_rng([seed, 10, R, L, ARM_ORDER.index(arm)])
-    a = ARMS[arm](proto, rng, L if L else 10 ** 9)
+    a = make_arm(seed, arm, R, L, proto)
     online, rep_ids, probes, diag, macs = [], [], {}, {}, []
     for era in range(proto["n_eras"]):
         before = a.macs
@@ -199,14 +207,16 @@ def run_scratch(seed: int, R: int, proto: Dict) -> Dict:
 
 
 def jobs(seeds: List[int], proto: Dict, arms: Optional[List[str]] = None) -> List[Tuple]:
-    arms = arms or ARM_ORDER
+    study_1b = proto.get("study") == "1b"
+    arms = arms or (arms_1b.ARM_ORDER_1B if study_1b else ARM_ORDER)
+    no_births = arms_1b.NO_BIRTHS if study_1b else ("IMMORTAL",)
     out = []
     for seed in seeds:
         for R in proto["regimes"]["novelty_interval"]:
             out.append((seed, "SCRATCH", R, NO_LIFESPAN))
             for arm in arms:
-                lifespans = [NO_LIFESPAN] if arm == "IMMORTAL" else proto["regimes"]["lifespan"]
-                if arm in ARMS and hasattr(ARMS[arm], "childhood"):
+                lifespans = [NO_LIFESPAN] if arm in no_births else proto["regimes"]["lifespan"]
+                if not study_1b and arm in ARMS and hasattr(ARMS[arm], "childhood"):
                     # a childhood must end before the next birth
                     lifespans = [L for L in lifespans if L > ARMS[arm].childhood]
                 for L in lifespans:
@@ -240,7 +250,8 @@ def parse_seeds(text: str) -> List[int]:
 
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--phase", required=True, choices=["pilot", "confirmation", "smoke"])
+    ap.add_argument("--phase", required=True,
+                    choices=["pilot", "confirmation", "smoke", "pilot_1b", "confirmation_1b", "smoke_1b"])
     ap.add_argument("--seeds", required=True)
     ap.add_argument("--arms", default="")
     ap.add_argument("--procs", type=int, default=os.cpu_count() or 1)
@@ -249,9 +260,11 @@ def main(argv=None) -> None:
     args = ap.parse_args(argv)
 
     proto = load_protocol(args.protocol)
-    if args.phase == "confirmation" and not proto.get("frozen"):
-        sys.exit("protocol.json is not frozen; confirmation seeds may not be run yet")
-    meta = {"study": STUDY, "phase": args.phase, "version": __version__,
+    if args.phase.endswith("_1b") != (proto.get("study") == "1b"):
+        sys.exit(f"phase {args.phase} does not match the protocol {args.protocol}")
+    if args.phase.startswith("confirmation") and not proto.get("frozen"):
+        sys.exit("the protocol is not frozen; confirmation seeds may not be run yet")
+    meta = {"study": proto.get("study_name", STUDY), "phase": args.phase, "version": __version__,
             "code_commit": code_commit(), "protocol_hash": protocol_hash(proto),
             "numpy": np.__version__, "python": platform.python_version()}
     os.makedirs(RESULTS_DIR, exist_ok=True)

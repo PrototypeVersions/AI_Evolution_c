@@ -1,11 +1,13 @@
 name: study1
-# Runs a batch of Study 1 (see PREREGISTRATION_v2.md) across 20 machines.
-# Push a branch named run/study1-<anything> containing learners/batch.json,
-# e.g. {"phase": "pilot", "seeds": "100-109"}. The results are committed back
-# to that branch as learners/results/<phase>.jsonl.
+# Runs a batch of Study 1 or 1b (PREREGISTRATION_v2.md, PREREGISTRATION_1b.md)
+# across 20 machines. Push a branch named run/study1-<anything> or
+# run/study1b-<anything> containing learners/batch.json, e.g.
+# {"phase": "pilot", "seeds": "100-109"} or {"phase": "pilot_1b", "seeds":
+# "300-304", "protocol": "learners/protocol_1b.json"}. The results are
+# committed back to that branch as learners/results/<phase>.jsonl.
 on:
   push:
-    branches: ["run/study1-*"]
+    branches: ["run/study1-*", "run/study1b-*"]
 
 permissions:
   contents: write
@@ -32,7 +34,8 @@ jobs:
         run: |
           PHASE=$(python -c "import json;print(json.load(open('learners/batch.json'))['phase'])")
           SEEDS=$(python -c "import json;print(json.load(open('learners/batch.json'))['seeds'])")
-          python -m learners.run --phase "$PHASE" --seeds "$SEEDS" --shard ${{ matrix.shard }}/20 --procs 4
+          PROTO=$(python -c "import json;print(json.load(open('learners/batch.json')).get('protocol', 'learners/protocol.json'))")
+          python -m learners.run --phase "$PHASE" --seeds "$SEEDS" --protocol "$PROTO" --shard ${{ matrix.shard }}/20 --procs 4
           mv "learners/results/$PHASE.jsonl" "shard-${{ matrix.shard }}.jsonl"
       - uses: actions/upload-artifact@v4
         with:

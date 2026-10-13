@@ -1,0 +1,35 @@
+{
+  "study": "1b",
+  "study_name": "study1b_what_keeps_copying_plastic",
+  "batch": 32,
+  "n_eras": 120,
+  "checkpoints": [
+    20,
+    40,
+    60,
+    80,
+    100,
+    120
+  ],
+  "eval_n": 2000,
+  "pop": 4,
+  "teach_share": 0.5,
+  "reset_shrink": 0.8,
+  "reset_noise": 0.1,
+  "fitness_window": 20,
+  "regimes": {
+    "novelty_interval": [
+      2,
+      6
+    ],
+    "lifespan": [
+      5,
+      20
+    ]
+  },
+  "lr": 0.001,
+  "steps_per_era": 800,
+  "probe_steps": 100,
+  "frontier_steps": 800,
+  "frozen": false
+}
