@@ -28,6 +28,7 @@
   "lr": 0.001,
   "steps_per_era": 800,
   "probe_steps": 100,
-  "frozen": false,
-  "frontier_steps": 800
+  "frozen": true,
+  "frontier_steps": 800,
+  "frozen_at": "2026-10-13T01:45Z"
 }

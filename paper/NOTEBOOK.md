@@ -218,3 +218,14 @@ unchanged.
   is now also recorded at the default learning rate, like NOVEL. A reviewer
   will ask whether population arms win on the probes because of their
   weights or their step size; this answers it.
+
+## 2026-10-13 ~01:45 — Protocol frozen; confirmation launched
+
+- `learners/protocol.json` set to `"frozen": true`. Protocol hash
+  `7e75f8ff9b071279`. Every confirmation record must carry this hash.
+- Confirmation: seeds 7000–7029, 34 runs per seed (1,020 runs), on GitHub
+  Actions from branch `run/study1-confirmation`. These seeds have never been
+  run before by any code version.
+- From here on, any change to the code or protocol is a deviation that must
+  be dated and justified in `../PREREGISTRATION_v2.md`, and results from
+  before and after it are reported separately.
