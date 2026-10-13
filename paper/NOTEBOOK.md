@@ -264,3 +264,88 @@ confirmation records carry. Tests passed on GitHub for the frozen commit.
   ("unrelated memory recovers best") did not replicate on fresh seeds. They
   remain in git history (commit 15f7aa0, merge of PR #1). The long run's
   only dependency on them, `code_commit`, moved to `longrun/provenance.py`.
+
+## 2026-10-13 02:05 — Confirmation results (seeds 7000–7029, frozen protocol)
+
+All 1,020 confirmation runs finished on GitHub Actions (run 38333032173)
+and carry protocol hash 7e75f8ff9b071279 and code commit 75e8f0a. The
+records were copied unchanged from branch `run/study1-confirmation`
+(commit 781e3a8) to `learners/results/confirmation.jsonl`. Analysis and
+figures were produced by the pre-registered scripts with no changes:
+`results/confirmation_summary.{json,md}` and `figures/confirmation/`.
+Verdicts below are after Holm–Bonferroni over the 44 family members
+(secondary family S1–S6 corrected separately). "Fast" is R = 2, "slow" is
+R = 6; the first number of a pair is lifespan 5, the second lifespan 20.
+
+**Primary family.**
+- **H1, the immortal learner loses plasticity: SUPPORTED in all four
+  regimes.** NOVEL falls from about 55% at era 20 to 50–52% at era 120,
+  against 67% for a fresh network; 43–50% of its hidden units are dead.
+- **H2a, the immortal learner knows more than one that restarts: REVERSED
+  in the fast world** (−0.9 points at both lifespans). Not supported in the
+  slow world (+3.5, Holm p = 0.054; −3.8).
+- **H2b, CLONE knows more than GENES:** supported in three of four regimes,
+  not in fast/L5.
+- **H3a, TEACH takes the next step better than IMMORTAL:** supported in the
+  fast world (+4.8, +4.3), not in the slow world. In the fast world RESTART
+  does just as well (56.8 and 57.3 vs 56.7 and 56.3), so this is the value
+  of a fresh network, not of teaching.
+- **H3b, TEACH keeps up better than IMMORTAL: REVERSED in three regimes**
+  (−6.4 fast/L5, −30.1 slow/L5, −16.5 slow/L20); not significant fast/L20.
+- **H3c, CLONE takes the next step better than IMMORTAL: SUPPORTED in all
+  four regimes, against our prediction ("no").** Slow world: 93.5 and 94.3
+  vs 74.7. At the default learning rate (secondary probe) CLONE still
+  reaches 85.1 and 89.7, so most of the lead is not an evolved step size.
+- **H4a, TEACH > RESET on the next step:** supported fast/L20 (+5.2),
+  reversed slow/L5 (−11.6), not significant otherwise.
+- **H4b, TEACH > RESET on the stream:** reversed in three regimes.
+- **H5, GENES > RANDOM on the stream:** supported in three regimes (+3.5,
+  +8.7, +6.2); fast/L20 not significant (+1.1).
+- **H6, splitting compute is costly (IMMORTAL > every population arm on the
+  stream):** supported in the slow world (IMMORTAL − CLONE ≈ 13 points);
+  not in the fast world.
+- **H7, TEACH knows more than RESTART:** not supported anywhere.
+
+**Secondary family.** S1 (TEACH16 knows more than TEACH): not supported.
+S2 (TEACH4 > IMMORTAL, next step) supported fast/L5 only; S4 (TEACH16 >
+IMMORTAL, next step) supported fast/L20 only. S3, S5 and S6 (a long
+childhood keeps up better than IMMORTAL or RESET) were mostly reversed.
+
+**Stream accuracy, eras 61–120 (ONLINE, %).**
+
+| Regime | IMMORTAL | RESET | RESTART | TEACH | CLONE | GENES | RANDOM |
+|---|---|---|---|---|---|---|---|
+| fast/L5 | 43.5 | 50.0 | 39.5 | 37.1 | 38.9 | 33.4 | 30.0 |
+| fast/L20 | 43.5 | 42.8 | 43.5 | 42.1 | 40.2 | 31.6 | 30.5 |
+| slow/L5 | 93.3 | 94.1 | 62.7 | 63.2 | 80.1 | 50.3 | 41.6 |
+| slow/L20 | 93.3 | 93.8 | 77.0 | 76.8 | 79.9 | 52.8 | 46.7 |
+
+**Plain reading.** To do well on the current task, keep one network and
+loosen it now and then (RESET ≈ IMMORTAL in the slow world, RESET best at
+fast/L5). To stay able to take the next step, keep a small population and
+copy the best member's weights (CLONE best FRONTIER everywhere). Children
+started from scratch, taught or not, lose on both. Teaching, as
+implemented, did not pass on measurable knowledge even with a 16-era
+childhood.
+
+**Caveats to carry into the paper.**
+- The fast world is close to the floor for every arm (ONLINE 30–50%,
+  chance 25%, FRONTIER near a fresh network's 54%). Its comparisons say
+  less than the slow world's.
+- CLONE's representative is the fittest of four, and each member gets a
+  quarter of the updates. Fewer updates per network may be why it loses
+  less plasticity; a control that trains one network with a quarter of the
+  budget would separate selection from slower wear.
+- FRONTIER falls over time for every arm, including fresh networks, because
+  the next skills are larger (more bits). It is comparable between arms at
+  a checkpoint, not across checkpoints.
+- KNOWLEDGE (linear readout ≥ 90%) is near zero for all arms by era 120. It
+  measures explicit retention, not how fast a skill comes back.
+- The result is about small MLPs on synthetic parity skills. Whether it
+  holds for other architectures (a small transformer) is the obvious next
+  study.
+
+**Website.** `docs/study1.json` is now built from the confirmation records
+and `docs/index.html` shows the findings and the verdict matrix. Wording on
+the site was checked against the summary table; where a result was
+descriptive and not tested (RESET vs IMMORTAL on the stream) the site says so.

@@ -73,6 +73,13 @@ memory and not yet checked against the paper itself.
 ## Forgetting
 
 - **Kirkpatrick, J., et al. (2017).** Overcoming catastrophic forgetting in neural networks. *PNAS*, 114(13), 3521–3526.
+- **Hinton, G. E., & Plaut, D. C. (1987).** Using fast weights to deblur old memories. *Proceedings of the Cognitive Science Society*.†
+  Shows "savings": a network relearns forgotten associations much faster than
+  it first learned them. This matters for reading KNOWLEDGE. In the pilot, the
+  immortal learner explicitly kept only about 2 of 23 skills at the 90%
+  readout threshold, yet stayed near 90% on the stream. So forgotten skills
+  are probably relearned quickly, and KNOWLEDGE measures explicit retention,
+  not recoverability.
 
 ## Motivation: AI self-replication
 

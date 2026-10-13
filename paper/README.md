@@ -3,6 +3,10 @@
 Everything needed to write up Study 1 ("Should a learning machine reproduce,
 or live forever?") lives here or is generated from the raw records.
 
+**Status (2026-10-13).** The confirmation run is complete. The verdicts and a
+plain reading are in the notebook entry "Confirmation results"; the full
+tables are in `results/confirmation_summary.md`.
+
 | What | Where |
 |---|---|
 | The plan, predictions and every deviation | [`../PREREGISTRATION_v2.md`](../PREREGISTRATION_v2.md) (v1, kept as a record: [`../PREREGISTRATION.md`](../PREREGISTRATION.md)) |
