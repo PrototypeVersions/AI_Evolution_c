@@ -229,3 +229,12 @@ unchanged.
 - From here on, any change to the code or protocol is a deviation that must
   be dated and justified in `../PREREGISTRATION_v2.md`, and results from
   before and after it are reported separately.
+
+## 2026-10-13 01:38 — Correction: freeze time
+
+The `frozen_at` value in `learners/protocol.json` (01:45Z) and the time on
+the entry above were estimates and are a few minutes late. The freeze
+commit (75e8f0a) is dated 01:37:30Z and the confirmation run on GitHub
+(run 38333032173) started at 01:37:42Z; those are the authoritative times.
+`frozen_at` is left as written so the protocol hash stays the one the
+confirmation records carry. Tests passed on GitHub for the frozen commit.
