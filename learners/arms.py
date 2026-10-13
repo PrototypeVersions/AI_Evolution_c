@@ -144,6 +144,55 @@ class Teach(Arm):
         self.members = [self._member(child, era, parent.id, "taught")]
 
 
+class _Childhood(Arm):
+    """Secondary arms (PREREGISTRATION_v2 deviation 3): a longer childhood.
+
+    Every `lifespan` eras a fresh child is born. For the next `childhood`
+    eras the parent keeps living and training on the stream with half of each
+    era's budget (it stays the representative), while the other half teaches
+    the child exactly as TEACH does. When the childhood ends, the parent
+    retires and the child takes over. No weights are copied."""
+    childhood = 4
+
+    def __init__(self, proto, rng, lifespan):
+        super().__init__(proto, rng, lifespan)
+        self.child: Optional[Member] = None
+        self.graduates = None
+
+    def era(self, world: SkillWorld, era: int) -> None:
+        start = self.macs
+        if self.child is not None and era == self.graduates:
+            self.members, self.child = [self.child], None  # the parent retires
+        if era > 0 and era % self.lifespan == 0 and self.child is None:
+            self.child = self._member(self._default_net(), era, self.members[0].id, "taught")
+            self.graduates = era + self.childhood
+        parent = self.members[0]
+        if self.child is not None:
+            teach_cost = self.batch * 4 * FWD
+            steps = int(self.budget * self.p["teach_share"]) // teach_cost
+            for _ in range(steps):
+                self.child.net.teach_step(parent.net, random_inputs(self.rng, self.batch))
+            self.macs += steps * teach_cost
+        step_cost = self.batch * 3 * FWD
+        steps = (self.budget - (self.macs - start)) // step_cost
+        task = world.tasks[era]
+        for _ in range(int(steps)):
+            x, y = world.batch(task, self.rng, self.batch)
+            parent.recent.append(parent.net.train_step(x, y))
+        self.macs += int(steps) * step_cost
+        assert self.macs - start <= self.budget
+
+
+class Teach4(_Childhood):
+    name = "TEACH4"
+    childhood = 4
+
+
+class Teach16(_Childhood):
+    name = "TEACH16"
+    childhood = 16
+
+
 class _Population(Arm):
     pop = 4
 
@@ -192,4 +241,5 @@ class Random(_Population):
                         for _ in range(self.pop)]
 
 
-ARMS = {cls.name: cls for cls in (Immortal, Reset, Restart, Teach, Clone, Genes, Random)}
+ARMS = {cls.name: cls for cls in (Immortal, Reset, Restart, Teach, Clone, Genes, Random, Teach4, Teach16)}
+SECONDARY = ("TEACH4", "TEACH16")

@@ -51,8 +51,21 @@ def table(recs: List[Dict]) -> Dict[Tuple[str, int, int], Dict[int, Dict]]:
 PRIMARY = ("FINAL_FRONTIER", "FINAL_KNOWLEDGE", "FINAL_NOVEL", "ONLINE")
 
 
+SECONDARY_OUTCOMES = ("KNOWLEDGE_MEAN", "RECENT_KNOWLEDGE", "NOVEL_FIXED_LR", "FRONTIER_FIXED_LR")
+RECENT = 8   # "recent knowledge": the most recently introduced skills
+KNOWN = 0.9
+
+
 def outcome(rec: Dict, name: str) -> float:
     """A named outcome; "KIND@cp" reads a probe at a checkpoint."""
+    cps = sorted(rec["probes"], key=int)
+    if name == "KNOWLEDGE_MEAN":
+        return float(np.mean([rec["probes"][c]["known_share"] for c in cps]))
+    if name == "RECENT_KNOWLEDGE":
+        acc = rec["probes"][cps[-1]]["knowledge"][-RECENT:]
+        return float(np.mean([a >= KNOWN for a in acc]))
+    if name in ("NOVEL_FIXED_LR", "FRONTIER_FIXED_LR"):
+        return float(np.mean(rec["probes"][cps[-1]].get(name.lower(), [np.nan])))
     if "@" in name:
         kind, cp = name.split("@")
         p = rec["probes"][cp]
@@ -150,6 +163,29 @@ def family(t, R: int, L: int, last: int, first: int, rng) -> List[Dict]:
     return F
 
 
+def secondary_family(t, R: int, L: int, rng) -> List[Dict]:
+    """Secondary arms with a longer childhood (PREREGISTRATION_v2 deviation 3).
+    Corrected separately from the primary family."""
+    F = []
+
+    def member(hid, label, a, b, name, predicted):
+        if (a, R, L) not in t or (b, R, L) not in t:
+            return
+        c = paired(t, a, b, R, L, name, rng)
+        c["direction_ok"] = bool(c["diff"] > 0)
+        F.append({"id": hid, "label": label, "parts": [c], "predicted": predicted,
+                  "p": c["p"], "direction_ok": c["direction_ok"]})
+
+    member("S1", "Longer teaching passes on more: FINAL_KNOWLEDGE TEACH16 > TEACH",
+           "TEACH16", "TEACH", "FINAL_KNOWLEDGE", "yes")
+    member("S2", "FINAL_FRONTIER TEACH4 > IMMORTAL", "TEACH4", "IMMORTAL", "FINAL_FRONTIER", "lean no")
+    member("S3", "ONLINE TEACH4 > IMMORTAL", "TEACH4", "IMMORTAL", "ONLINE", "lean no")
+    member("S4", "FINAL_FRONTIER TEACH16 > IMMORTAL", "TEACH16", "IMMORTAL", "FINAL_FRONTIER", "lean no")
+    member("S5", "ONLINE TEACH16 > IMMORTAL", "TEACH16", "IMMORTAL", "ONLINE", "lean no")
+    member("S6", "ONLINE TEACH4 > RESET", "TEACH4", "RESET", "ONLINE", "lean no")
+    return F
+
+
 def holm(members: List[Dict]) -> None:
     order = sorted(range(len(members)), key=lambda i: members[i]["p"])
     m = len(members)
@@ -176,8 +212,8 @@ def descriptives(t, R: int, L: int, arms: List[str], cps: List[int]) -> Dict:
         if not recs:
             continue
         row = {"n": len(recs)}
-        for name in PRIMARY + ("FINAL_DEPTH",):
-            if name in recs[0]:
+        for name in PRIMARY + ("FINAL_DEPTH",) + SECONDARY_OUTCOMES:
+            if name in recs[0] or name in SECONDARY_OUTCOMES:
                 v = [outcome(r, name) for r in recs]
                 row[name] = [float(np.mean(v)), float(np.std(v, ddof=1)) if len(v) > 1 else 0.0]
         for kind in ("NOVEL", "FRONTIER", "KNOWLEDGE"):
@@ -202,21 +238,28 @@ def analyse(phase: str) -> Dict:
     Rs = sorted({r["R"] for r in recs})
     Ls = sorted({r["L"] for r in recs if r["L"]})
     cps = sorted({int(k) for r in recs for k in r["probes"]})
-    arms = ["SCRATCH", "IMMORTAL", "RESET", "RESTART", "TEACH", "CLONE", "GENES", "RANDOM"]
-    regimes, all_members = [], []
+    arms = ["SCRATCH", "IMMORTAL", "RESET", "RESTART", "TEACH", "CLONE", "GENES", "RANDOM",
+            "TEACH4", "TEACH16"]
+    regimes, all_members, all_secondary = [], [], []
     for R, L in itertools.product(Rs, Ls):
         F = family(t, R, L, cps[-1], cps[0], rng)
-        for mem in F:
+        S = secondary_family(t, R, L, rng)
+        for mem in F + S:
             mem["regime"] = {"R": R, "L": L}
         all_members.extend(F)
-        regimes.append({"R": R, "L": L, "arms": descriptives(t, R, L, arms, cps), "family": F})
+        all_secondary.extend(S)
+        regimes.append({"R": R, "L": L, "arms": descriptives(t, R, L, arms, cps),
+                        "family": F, "secondary": S})
     holm(all_members)
-    for mem in all_members:
+    if all_secondary:
+        holm(all_secondary)
+    for mem in all_members + all_secondary:
         mem["verdict"] = verdict(mem)
     return {"phase": phase, "n_records": len(recs),
             "protocol_hash": recs[0]["protocol_hash"],
             "code_commits": sorted({r["code_commit"] for r in recs}),
             "seeds": sorted({r["seed"] for r in recs}), "family_size": len(all_members),
+            "secondary_family_size": len(all_secondary),
             "regimes": regimes, "exploratory": phase != "confirmation"}
 
 
@@ -239,6 +282,13 @@ def to_markdown(s: Dict) -> str:
             depth = f"{row['FINAL_DEPTH'][0]:.1f}" if "FINAL_DEPTH" in row else "—"
             lines.append(f"| {arm} | {cell('FINAL_FRONTIER')} | {cell('FINAL_KNOWLEDGE')} | {depth} | "
                          f"{cell('FINAL_NOVEL')} | {cell('ONLINE')} | {dead} |")
+        lines += ["", "Secondary measures (not tested unless named in S1–S6):", "",
+                  "| Arm | KNOWLEDGE, mean over checkpoints | newest 8 skills known | "
+                  "NOVEL at default lr | FRONTIER at default lr |", "|---|---|---|---|---|"]
+        for arm, row in reg["arms"].items():
+            cell = lambda k: f"{pct(row[k][0])} ± {pct(row[k][1])}" if k in row and row[k][0] == row[k][0] else "—"
+            lines.append(f"| {arm} | {cell('KNOWLEDGE_MEAN')} | {cell('RECENT_KNOWLEDGE')} | "
+                         f"{cell('NOVEL_FIXED_LR')} | {cell('FRONTIER_FIXED_LR')} |")
         lines += ["", "| # | Hypothesis | Predicted | Difference (pts, 95% CI) | p | p (Holm) | Verdict |",
                   "|---|---|---|---|---|---|---|"]
         for m in reg["family"]:
@@ -246,6 +296,11 @@ def to_markdown(s: Dict) -> str:
                               f"[{pct(p['ci'][0])}, {pct(p['ci'][1])}]" for p in m["parts"])
             lines.append(f"| {m['id']} | {m['label']} | {m['predicted']} | {diffs} | "
                          f"{m['p']:.4f} | {m['p_holm']:.4f} | {m['verdict']} |")
+        for m in reg.get("secondary", []):
+            p = m["parts"][0]
+            lines.append(f"| {m['id']} (secondary) | {m['label']} | {m['predicted']} | "
+                         f"{pct(p['diff'])} [{pct(p['ci'][0])}, {pct(p['ci'][1])}] | "
+                         f"{m['p']:.4f} | {m['p_holm']:.4f} (secondary family) | {m['verdict']} |")
         lines.append("")
     return "\n".join(lines)
 

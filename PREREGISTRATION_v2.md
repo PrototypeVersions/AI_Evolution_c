@@ -284,3 +284,66 @@ There is no networking, no external model, and no code generation. See
      `learners/results/pilot_v2a_too_steep.jsonl`.
    - **Disclosure.** I noticed this while looking at results across arms.
      The trigger, every arm near chance, favours none of them.
+3. **2026-10-13, after the full v2 pilot (280 runs, seeds 100–109),
+   before any confirmation seed: probes fixed and secondary arms added.**
+   The pilot is in `learners/results/pilot.jsonl`, summarised in
+   `paper/results/pilot_summary.md`. It is exploratory. With 10 seeds and 44
+   tests, nothing can pass Holm–Bonferroni.
+   - **FRONTIER probe length.** FRONTIER scored 50–55% (chance is 50%) for
+     every arm at every checkpoint. That included the immortal learner while
+     its readouts showed it knew the parent skills, so this is a floor
+     effect. K was calibrated on two-bit skills, but next-step skills are
+     larger by construction.
+     - FRONTIER now gets one era's budget (800 steps) and asks directly
+       whether a learner could take the next step within one era.
+     - NOVEL keeps K = 100. It was not at floor: the immortal learner fell
+       from 59% to 50% at the fast pace.
+   - **Secondary probes at the default learning rate.** Population
+     representatives scored up to 90% on NOVEL, apparently because the probe
+     uses each network's own (evolved) learning rate. Copies of the NOVEL
+     and FRONTIER probes at the default learning rate are now recorded as
+     secondary measures, so that the state of the weights can be separated
+     from an evolved step size. They are reported descriptively. The primary
+     NOVEL and FRONTIER are unchanged.
+   - **Secondary knowledge measures**, computed from the per-skill readouts
+     already recorded:
+     - FINAL_KNOWLEDGE was near floor (0–17%) for every arm at era 120,
+       because networks forget skills they no longer practise.
+     - Added: KNOWLEDGE averaged over all checkpoints, and the share of the 8
+       most recently introduced skills that are known.
+     - The primary outcome is unchanged.
+   - **Secondary arms with a longer childhood.**
+     - In the pilot, TEACH did no better than RESTART. An exploratory check
+       (`paper/exploratory/teaching_fidelity.py`, seeds 60–64) showed why.
+       Half an era of teaching passed on about 1 of the parent's 5 known
+       skills. Two eras passed on 2–4, and eight eras passed on 4–6 of 5–6.
+     - The pre-registered TEACH arm is kept unchanged. Two secondary arms
+       are added:
+       - TEACH4 (both lifespans);
+       - TEACH16 (lifespan 20 only).
+     - In these arms the parent keeps living and training on the stream with
+       half of each era's budget. The other half teaches the child as in
+       TEACH, for 4 or 16 eras, after which the parent retires. The parent
+       is the measured representative until then; the child takes over with
+       the full budget at the start of the next era.
+     - They are tested in a separate secondary family, S1–S6, with its own
+       Holm correction. Predictions are written before any run:
+
+       | # | Comparison | Prediction | Prior |
+       |---|---|---|---|
+       | S1 | `FINAL_KNOWLEDGE`: TEACH16 > TEACH | yes | 75% |
+       | S2 | `FINAL_FRONTIER`: TEACH4 > IMMORTAL | lean no | 40% |
+       | S3 | `ONLINE`: TEACH4 > IMMORTAL | lean no | 35% |
+       | S4 | `FINAL_FRONTIER`: TEACH16 > IMMORTAL | lean no | 45% |
+       | S5 | `ONLINE`: TEACH16 > IMMORTAL | lean no | 40% |
+       | S6 | `ONLINE`: TEACH4 > RESET | lean no | 40% |
+   - **Disclosure.** All of this was decided after seeing pilot results
+     across arms.
+     - The probe-length and knowledge changes are triggered by floor
+       effects in every arm.
+     - The secondary arms are triggered by TEACH's weak showing, so they
+       are labelled secondary and cannot change the primary family.
+   - **Pilot pattern** (exploratory, consistent in all 10 seeds):
+     - the immortal learner's plasticity falls;
+     - TEACH and RESTART do worse than IMMORTAL and RESET on the stream;
+     - splitting compute across a population costs a great deal.

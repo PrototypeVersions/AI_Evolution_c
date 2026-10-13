@@ -36,7 +36,7 @@ STUDY = "reproduce_or_live_forever"
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROTOCOL_PATH = os.path.join(HERE, "protocol.json")
 RESULTS_DIR = os.path.join(HERE, "results")
-ARM_ORDER = ["IMMORTAL", "RESET", "RESTART", "TEACH", "CLONE", "GENES", "RANDOM"]
+ARM_ORDER = ["IMMORTAL", "RESET", "RESTART", "TEACH", "CLONE", "GENES", "RANDOM", "TEACH4", "TEACH16"]
 NO_LIFESPAN = 0  # IMMORTAL never reproduces, so one run serves every lifespan
 
 
@@ -73,13 +73,16 @@ def evaluate(net: MLP, world: SkillWorld, task, key: Tuple, n: int) -> float:
     return net.accuracy(x, y)
 
 
-def probe(net: MLP, world: SkillWorld, skill: int, steps: int, key: Tuple, proto: Dict) -> float:
+def probe(net: MLP, world: SkillWorld, skill: int, steps: int, key: Tuple, proto: Dict,
+          lr: Optional[float] = None) -> float:
     """Fine-tune a copy on a single-skill task, then score it. The copy gets a
     fresh output layer (identical for every arm, drawn from the probe key) and
     fresh Adam state, so the probe measures what the hidden layers can learn
     rather than how confidently the old output layer answers the previous task.
     The copy is discarded, so probing never affects a run."""
     c = net.copy(with_optimizer=False)
+    if lr is not None:
+        c.lr = lr
     n_in, n_out = c.W[-1].shape
     c.W[-1][...] = fresh_weight(np.random.default_rng(key + (2,)), n_in, n_out)
     c.b[-1][...] = 0.0
@@ -109,10 +112,22 @@ def measure(world: SkillWorld, checkpoint: int, proto: Dict, net_for) -> Dict:
     """The full battery at one checkpoint. `net_for(kind, i)` gives the network
     to probe (the arm's representative, or a fresh one for SCRATCH)."""
     skills = world.probes(checkpoint)
-    out = {kind: [round(probe(net_for(kind, i), world, k, proto["probe_steps"],
+    # FRONTIER asks "could it take the next step within one era?", so it gets
+    # an era's worth of steps; NOVEL keeps the calibrated probe length.
+    steps = {"frontier": proto.get("frontier_steps", proto["probe_steps"]),
+             "novel": proto["probe_steps"]}
+    out = {kind: [round(probe(net_for(kind, i), world, k, steps[kind],
                               (world.seed, 4, checkpoint, j, i), proto), 4)
                   for i, k in enumerate(ks)]
            for j, (kind, ks) in enumerate(sorted(skills.items()))}
+    # secondary: the same probes at the default learning rate, so that the
+    # state of the weights can be separated from an evolved step size
+    for j, kind in enumerate(sorted(skills)):
+        out[f"{kind}_fixed_lr"] = [
+            out[kind][i] if net_for(kind, i).lr == proto["lr"] else
+            round(probe(net_for(kind, i), world, k, steps[kind],
+                        (world.seed, 4, checkpoint, j, i), proto, lr=proto["lr"]), 4)
+            for i, k in enumerate(skills[kind])]
     out["skills"] = skills
     n = world.n_introduced(checkpoint - 1)
     acc = knowledge(net_for("knowledge", 0), world, n, (world.seed, 8, checkpoint))
@@ -191,6 +206,9 @@ def jobs(seeds: List[int], proto: Dict, arms: Optional[List[str]] = None) -> Lis
             out.append((seed, "SCRATCH", R, NO_LIFESPAN))
             for arm in arms:
                 lifespans = [NO_LIFESPAN] if arm == "IMMORTAL" else proto["regimes"]["lifespan"]
+                if arm in ARMS and hasattr(ARMS[arm], "childhood"):
+                    # a childhood must end before the next birth
+                    lifespans = [L for L in lifespans if L > ARMS[arm].childhood]
                 for L in lifespans:
                     out.append((seed, arm, R, L))
     return out

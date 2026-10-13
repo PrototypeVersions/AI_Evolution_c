@@ -150,6 +150,14 @@ class TestRuns(unittest.TestCase):
                 self.assertLessEqual(spent, r["budget_per_era"], arm)
                 self.assertGreater(spent, r["budget_per_era"] - step, arm)
 
+    def test_childhood_keeps_the_parent_until_the_child_graduates(self):
+        # TEACH4, lifespan 5: the child is born at era 5 and takes over after
+        # era 8, so the parent stays the representative for four more eras
+        r = runner.run_one(103, "TEACH4", 2, 5, {**TINY, "n_eras": 12, "checkpoints": [12]})
+        self.assertEqual(r["rep_ids"][:9], [r["rep_ids"][0]] * 9)
+        self.assertNotEqual(r["rep_ids"][9], r["rep_ids"][0])
+        self.assertEqual([(b["era"], b["kind"]) for b in r["lineage"]], [(0, "founder"), (5, "taught"), (10, "taught")])
+
     def test_probes_do_not_change_a_run(self):
         with_probes = runner.run_one(102, "CLONE", 2, 3, TINY)
         fewer = runner.run_one(102, "CLONE", 2, 3, {**TINY, "checkpoints": [10]})
