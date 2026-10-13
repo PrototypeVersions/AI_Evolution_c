@@ -141,3 +141,80 @@ never rewritten; corrections are new entries.
 - **Pilot logistics.** Runs now go to GitHub Actions in 20 parallel shards
   (`.github/workflows/study1.yml`); results are committed back to the run
   branch.
+
+## 2026-10-13 ~01:35 — Correction: times of the last three entries
+
+The times on the three entries above were estimated, and too late. Commit
+times show the staircase check ended about 00:50, v2 calibration about
+01:05, and the v2 pilot was stopped about 01:15. The order of events is
+unchanged.
+
+## 2026-10-13 ~01:35 — v2 pilot complete; probes fixed (v2 deviation 3)
+
+- **The pilot.** 280 runs (7 arms × 4 regimes × seeds 100–109, plus fresh
+  reference networks) on GitHub Actions in 20 shards. Records:
+  `learners/results/pilot.jsonl`. Summary: `results/pilot_summary.md`.
+  Figures: `figures/pilot/`. Exploratory: with 10 seeds and 44 tests,
+  nothing can pass Holm–Bonferroni (smallest possible p is about 0.002).
+- **What it shows** (exploratory, same direction in all 10 seeds unless
+  noted):
+  - At the slow pace (new skill every 6 eras), the immortal learner and
+    shrink-and-perturb keep up with the stream (ONLINE 92–93%). Weight
+    copying in a population reaches 77–78%. Teaching a fresh child for half
+    an era is no better than restarting from scratch (62% vs 60% with
+    lifespan 5; 74% vs 75% with lifespan 20). Darwinian selection on
+    learning settings reaches 49–52% and random search 41–46%.
+  - At the fast pace (new skill every 2 eras), nobody keeps up (ONLINE
+    30–54%). Shrink-and-perturb every 5 eras does best (54% vs 43% for the
+    immortal learner).
+  - The immortal learner's plasticity falls: NOVEL drops 5–10 points from
+    era 20 to era 120, and 44–49% of its hidden units are dead by the end
+    (restarting every 5 eras: about 9%).
+  - Restarting learners know *more* of the skills at era 120 than the
+    immortal learner in the slow pace with lifespan 20 (13.5% vs 8.3%),
+    because the immortal learner forgets skills it no longer practises and
+    the restarted one learned the recent ones fresh. This goes against H2a.
+  - Splitting compute four ways is very costly: 14–51 points of ONLINE.
+- **Problems found.**
+  - FRONTIER was at chance (50–55%) for every arm, including learners whose
+    readouts showed they knew the parent skills: a floor effect from a
+    probe calibrated on two-bit skills.
+  - NOVEL for population representatives reached 90%+, largely because the
+    probe uses each network's own evolved learning rate.
+  - FINAL_KNOWLEDGE was near floor (0–17%) for every arm.
+- **Why teaching failed** (`exploratory/teaching_fidelity.py`, seeds
+  60–64). A parent that knew 5–6 skills was taught to a fresh child for
+  half an era, 2 eras or 8 eras of teaching budget. The child kept 0–2 of
+  them, 2–4, and 4–6 respectively. Half an era is too short a childhood.
+- **Decision: v2 deviation 3** (written in `../PREREGISTRATION_v2.md`
+  before any confirmation seed):
+  - FRONTIER gets one era's budget (800 steps). NOVEL keeps K = 100.
+  - Secondary measures: NOVEL at the default learning rate; KNOWLEDGE
+    averaged over checkpoints; share of the 8 newest skills known.
+  - Secondary arms TEACH4 and TEACH16 (a childhood of 4 or 16 eras, during
+    which the parent keeps learning with half the budget), tested in a
+    separate family S1–S6 with predictions written first.
+  - The primary family H1–H7 is unchanged.
+- **Sanity check of the new probe on world 100** (not a pilot seed for
+  analysis; the code and numbers are in the session scratchpad, summarised
+  here). Slow pace, era 120:
+  - FRONTIER: fresh network 66%, immortal learner 72%, TEACH4 75%,
+    restart every 5 eras 67%. The immortal learner's FRONTIER fell from
+    99% at era 20 to 72%, so the probe now moves and is not at ceiling.
+  - TEACH4 with lifespan 20 kept 26% of skills at era 120 against 9% for
+    the immortal learner, with ONLINE 79% against 90%.
+  - Fast pace, same world, era 20 → era 120: FRONTIER for the immortal
+    learner 87% → 52%, shrink-and-perturb every 5 eras 84% → 69%, TEACH4
+    65% → 58%, fresh network 75% → 59%. The immortal learner ends *below* a
+    fresh network: it can no longer take steps a fresh network can.
+  - So FRONTIER now discriminates at both paces.
+- **Bug fixed before freezing.** A new unit test showed that in TEACH4 and
+  TEACH16 the child took over at the end of the last childhood era, so it
+  was measured once on the stream before it had trained on it. The
+  hand-over now happens at the start of the next era, as the plan says.
+  The TEACH4 numbers in the sanity check above came from the first version.
+- **One more secondary probe.** The pilot's FRONTIER (at K = 100) was also
+  highest for the population arms, whose learning rates evolve. So FRONTIER
+  is now also recorded at the default learning rate, like NOVEL. A reviewer
+  will ask whether population arms win on the probes because of their
+  weights or their step size; this answers it.

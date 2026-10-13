@@ -104,6 +104,18 @@ are multiples of L.
   by fresh networks with freshly drawn learning settings. This is random
   search.
 
+**Secondary arms: a longer childhood.** Added after the pilot showed that
+half an era of teaching passes on little (see Deviation 3 of the
+pre-registration). They are analysed in a separate family.
+- **TEACH4 and TEACH16.** At each birth era a fresh child is born, but the
+  parent keeps living. For the next 4 (or 16) eras the parent trains on the
+  stream with half of each era's budget, and the child spends the other half
+  learning to reproduce the parent exactly as in TEACH. Then the parent
+  retires and the child takes over with the full budget.
+- During a childhood the parent is the representative that is measured.
+- TEACH16 is run only with lifespan 20, since a 16-era childhood does not
+  fit in a 5-era life.
+
 **Genome.**
 - The prior draws:
   - the learning rate log-uniformly within ×3 of the default;
@@ -125,15 +137,27 @@ network itself, or the fittest member of a population.
   - A skill is *known* when it is decoded with ≥ 90% accuracy.
   - KNOWLEDGE is the share of introduced skills that are known. DEPTH is the
     largest known skill (bits).
+  - Secondary knowledge measures: KNOWLEDGE averaged over all six
+    checkpoints, and the share of the 8 most recently introduced skills that
+    are known at era 120.
 - **FRONTIER.** This uses the next six skills the stream will introduce whose
   parent is already introduced. For each, a copy of the representative gets
   a fresh output layer (identical across arms for a given probe) and fresh
   Adam state.
-  - The copy is fine-tuned for K = ⟨calibrated: 100⟩ steps on that single
-    skill (labels 0/1) with the network's own learning rate.
+  - The copy is fine-tuned for one era's worth of steps (800) on that single
+    skill (labels 0/1) with the network's own learning rate. FRONTIER thus
+    asks whether the learner could take the next step within one era.
   - It is scored on 2,000 fresh inputs, then discarded.
-- **NOVEL.** The same procedure on six reserved two-bit skills. This measures
-  plasticity, the ability to learn something unrelated to anything seen.
+  - In practice each probe either succeeds (near 100%) or stays at chance,
+    so FRONTIER is close to 50% + ½ × the share of next skills learned.
+- **NOVEL.** The same procedure on six reserved two-bit skills, with
+  K = ⟨calibrated: 100⟩ steps. This measures plasticity, the ability to
+  learn something unrelated to anything seen.
+- **Probes at the default learning rate** (secondary). The NOVEL and
+  FRONTIER probes repeated with the default learning rate instead of the
+  network's own, so that the state of the weights can be separated from an
+  evolved step size. For single-network arms they are identical to the
+  primary probes.
 - **ONLINE.** At the end of every era, the representative's accuracy on that
   era's task (2,000 fresh inputs).
 - **Reference and diagnostics.** A fresh network is measured with the same

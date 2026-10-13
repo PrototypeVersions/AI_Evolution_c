@@ -8,7 +8,7 @@ or live forever?") lives here or is generated from the raw records.
 | The plan, predictions and every deviation | [`../PREREGISTRATION_v2.md`](../PREREGISTRATION_v2.md) (v1, kept as a record: [`../PREREGISTRATION.md`](../PREREGISTRATION.md)) |
 | Dated decisions, findings and mistakes | [`NOTEBOOK.md`](NOTEBOOK.md) |
 | Related work with why each paper matters | [`related_work.md`](related_work.md) |
-| Draft methods section | `methods.md` (written once the design is frozen) |
+| Draft methods section, updated with every deviation | [`methods.md`](methods.md) |
 | Raw run records (one JSON line per run, with code commit and protocol hash) | `../learners/results/<phase>.jsonl` |
 | Calibration data | `../learners/calibration.json` |
 | Frozen protocol | `../learners/protocol.json` |
