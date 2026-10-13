@@ -29,13 +29,17 @@ from learners.analysis import analyse, load, outcome, table  # noqa: E402
 COLORS = {
     "IMMORTAL": "#222222", "RESET": "#CC79A7", "RESTART": "#56B4E9", "TEACH": "#D55E00",
     "CLONE": "#0072B2", "GENES": "#009E73", "RANDOM": "#E69F00", "SCRATCH": "#999999",
+    "TEACH4": "#D55E00", "TEACH16": "#D55E00",
 }
 ARMS = ["IMMORTAL", "RESET", "RESTART", "TEACH", "CLONE", "GENES", "RANDOM"]
+SECONDARY = ["TEACH4", "TEACH16"]  # drawn in TEACH's colour, dashed and dotted
+STYLES = {"SCRATCH": "--", "TEACH4": (0, (5, 2)), "TEACH16": (0, (1, 1.5))}
 LABELS = {
     "IMMORTAL": "Immortal", "RESET": "Reset (shrink & perturb)", "RESTART": "Restart (nothing inherited)",
     "TEACH": "Teach a fresh child", "CLONE": "Clone (population, weights)",
     "GENES": "Genes (population, settings only)", "RANDOM": "Random search (population)",
     "SCRATCH": "Fresh network",
+    "TEACH4": "Teach, 4-era childhood (secondary)", "TEACH16": "Teach, 16-era childhood (secondary)",
 }
 
 plt.rcParams.update({
@@ -52,6 +56,16 @@ def save(fig, out, name):
     plt.close(fig)
 
 
+def shared_legend(fig, axes):
+    """One legend under the whole figure, so no curve is hidden behind it."""
+    seen = {}
+    for ax in np.atleast_1d(axes).flat:
+        for h, l in zip(*ax.get_legend_handles_labels()):
+            seen.setdefault(l, h)
+    fig.legend(seen.values(), seen.keys(), loc="upper center", bbox_to_anchor=(0.5, 0.0),
+               ncol=3, frameon=False)
+
+
 def regime_title(reg):
     return f"new skill every {reg['R']} eras · lifespan {reg['L']}"
 
@@ -60,50 +74,53 @@ def fig_online(s, out):
     regs = s["regimes"]
     fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.0), sharex=True, sharey=True)
     for ax, reg in zip(axes.flat, regs):
-        for arm in ARMS:
+        ax.axhline(25, color="#888888", linewidth=0.8, linestyle=":")
+        for arm in ARMS + SECONDARY:
             row = reg["arms"].get(arm)
             if not row or "online_curve" not in row:
                 continue
             y = np.convolve(row["online_curve"], np.ones(5) / 5, mode="valid")
-            ax.plot(np.arange(len(y)) + 5, 100 * y, color=COLORS[arm], label=LABELS[arm])
+            ax.plot(np.arange(len(y)) + 5, 100 * y, color=COLORS[arm], label=LABELS[arm],
+                    linestyle=STYLES.get(arm, "-"))
         ax.set_title(regime_title(reg))
         ax.set_ylim(0, 100)
     for ax in axes[1]:
         ax.set_xlabel("era")
     for ax in axes[:, 0]:
         ax.set_ylabel("accuracy on the current task (%)")
-    axes[0, 0].legend(loc="lower left", frameon=False)
+    axes[1, 0].text(2, 27, "chance", fontsize=7, color="#888888")
+    shared_legend(fig, axes)
     fig.suptitle("Performance on the stream (mean over seeds, 5-era moving average)", y=1.0)
     save(fig, out, "fig1_online")
 
 
 def fig_trajectories(s, out):
     regs = s["regimes"]
-    rows = [("frontier_by_cp", "FRONTIER: learning the next skills (%)", 100),
-            ("knowledge_by_cp", "KNOWLEDGE: skills known (%)", 100),
-            ("depth_by_cp", "deepest skill known (bits)", 1),
-            ("novel_by_cp", "NOVEL: learning unrelated skills (%)", 100)]
+    rows = [("frontier_by_cp", "FRONTIER (%)\nlearning the next skills", 100),
+            ("knowledge_by_cp", "KNOWLEDGE (%)\nskills known", 100),
+            ("depth_by_cp", "DEPTH (bits)\ndeepest skill known", 1),
+            ("novel_by_cp", "NOVEL (%)\nlearning unrelated skills", 100)]
     fig, axes = plt.subplots(len(rows), len(regs), figsize=(9.5, 8.6), sharex=True, sharey="row")
     for j, reg in enumerate(regs):
         for i, (key, label, scale) in enumerate(rows):
             ax = axes[i, j]
-            for arm in ["SCRATCH"] + ARMS:
+            for arm in ["SCRATCH"] + ARMS + SECONDARY:
                 row = reg["arms"].get(arm)
                 if not row or key not in row:
                     continue
                 cps = sorted(int(c) for c in row[key])
                 ys = [scale * row[key][c if c in row[key] else str(c)] for c in cps]
                 ax.plot(cps, ys, color=COLORS[arm], marker="o", markersize=3,
-                        linestyle="--" if arm == "SCRATCH" else "-", label=LABELS[arm])
+                        linestyle=STYLES.get(arm, "-"), label=LABELS[arm])
             if i == 0:
                 ax.set_title(regime_title(reg))
             if j == 0:
                 ax.set_ylabel(label)
             if i == len(rows) - 1:
                 ax.set_xlabel("era")
-    axes[0, 0].legend(loc="best", frameon=False, fontsize=7)
     fig.suptitle("What each life history knows and can still learn (mean over seeds)", y=1.0)
     fig.tight_layout()
+    shared_legend(fig, axes)
     save(fig, out, "fig2_trajectories")
 
 
@@ -171,17 +188,18 @@ def fig_diagnostics(s, out):
     regs = s["regimes"]
     fig, axes = plt.subplots(1, len(regs), figsize=(10, 2.8), sharey=True)
     for ax, reg in zip(np.atleast_1d(axes), regs):
-        for arm in ARMS:
+        for arm in ARMS + SECONDARY:
             row = reg["arms"].get(arm)
             if not row or "dead_by_cp" not in row:
                 continue
             cps = sorted(int(c) for c in row["dead_by_cp"])
             ax.plot(cps, [100 * row["dead_by_cp"][c if c in row["dead_by_cp"] else str(c)] for c in cps],
-                    color=COLORS[arm], marker="o", markersize=3, label=LABELS[arm])
+                    color=COLORS[arm], marker="o", markersize=3, label=LABELS[arm],
+                    linestyle=STYLES.get(arm, "-"))
         ax.set_title(regime_title(reg))
         ax.set_xlabel("era")
     np.atleast_1d(axes)[0].set_ylabel("dead hidden units (%)")
-    np.atleast_1d(axes)[0].legend(frameon=False, fontsize=7)
+    shared_legend(fig, axes)
     save(fig, out, "fig5_dead_units")
 
 
