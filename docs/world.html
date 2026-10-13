@@ -7,31 +7,13 @@
 <meta name="description" content="One persistent simulated world of evolving agents, advanced daily and never reset.">
 <style>
   :root {
-    color-scheme: light;
-    --page: #f9f9f7; --surface: #fcfcfb;
-    --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
-    --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
-    --h0: #2a78d6; --h1: #eb6834; --h2: #1baf7a; --h3: #eda100;
-    --seq: #2a78d6; --seq-lo: #cde2fb;
-    --critical: #d03b3b; --warn: #fab219; --good: #0ca30c;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      color-scheme: dark;
-      --page: #0d0d0d; --surface: #1a1a19;
-      --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
-      --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
-      --h0: #3987e5; --h1: #d95926; --h2: #199e70; --h3: #c98500;
-      --seq: #3987e5; --seq-lo: #184f95;
-    }
-  }
-  :root[data-theme="dark"] {
     color-scheme: dark;
-    --page: #0d0d0d; --surface: #1a1a19;
+    --page: #000000; --surface: #0b0b0d;
     --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
-    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
+    --grid: #232326; --axis: #3a3a3e; --ring: rgba(255,255,255,0.09);
     --h0: #3987e5; --h1: #d95926; --h2: #199e70; --h3: #c98500;
     --seq: #3987e5; --seq-lo: #184f95;
+    --critical: #d03b3b; --warn: #fab219; --good: #0ca30c;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--page); color: var(--ink);
@@ -92,7 +74,7 @@
 </head>
 <body>
 <main>
-  <nav><a href="index.html">Lab studies</a><a href="world.html" aria-current="page">The long run</a></nav>
+  <nav><a href="index.html">← Study 1: reproduce or live forever</a><a href="world.html" aria-current="page">The ecology world</a></nav>
   <span class="badge">Closed simulation · rule-based agents · no AI model connected yet</span>
   <h1>The Long Run</h1>
   <p class="lede">One persistent world that is never reset. Agents carry small behaviour programs that mutate when they reproduce; they forage, breed, learn, move between four habitats, and can steal from neighbours. Nothing about their strategies is scripted. The world advances every day and this page shows what has happened so far.</p>

@@ -1,115 +1,89 @@
-# AI_Evolution_c — Autonomous Ecology Lab
+# AI_Evolution_c — AI Evolution Lab
 
-A **contained, abstract simulation** for studying population dynamics of
-self-propagating agents: when inherited experience helps a population adapt,
-and when it traps the population in strategies that have become obsolete.
+Closed simulations of how learning machines change, improve and pass things
+on. Everything runs in-process on synthetic data. There is no networking and
+no real or volunteer computers are involved. See [SAFETY.md](SAFETY.md).
 
-> **This is a simulation, not a tool.** Everything happens inside an in-memory
-> model. There is no networking, no device discovery, no exploitation, and no
-> interaction with any real system. See [SAFETY.md](SAFETY.md). The agents'
-> entire universe is a Python object; an action like `REPLICATE(node_17)` only
-> instantiates another record inside the simulator.
+**Website:** the GitHub Pages site built from `docs/`.
 
-## What this is (and is not)
+## Study 1: reproduce, or live forever?
 
-This is agent-based evolutionary modelling, in the same family as a
-branching-process or Lotka–Volterra simulation. It was motivated by public
-discussion of distributed/edge-device AI replication, but it deliberately
-studies only the **abstract science** of the question: under what conditions a
-population of agents that pass information to their descendants sustains itself,
-specializes, or collapses.
+The main experiment. Under exactly equal training compute, on a never-ending
+stream of problems that keeps getting harder, does a learning machine improve
+more by living forever or by reproducing? And which inheritance channel
+matters: weights, behaviour (teaching) or learning settings (genes)?
 
-It does **not** reproduce, and cannot be extended within this repo to reproduce,
-any of the real-world propagation steps (network scanning, gaining access to
-machines, deploying software to hardware). The simulated action set is fixed and
-operates only on simulated nodes.
+- **The learners** are small neural networks (32 → 128 → 128 → 4) trained with
+  hand-written numpy backpropagation.
+- **The world** is a staircase of parity skills. Each new skill adds one bit to
+  an existing one, so knowledge has to accumulate.
+- **Nine life histories** are compared at equal compute:
+  - immortal;
+  - shrink-and-perturb reset;
+  - restart;
+  - teach a child, plus two secondary versions with a longer childhood;
+  - a population that copies weights;
+  - a population that evolves only its learning settings;
+  - random search.
+- **Pre-registered.** The plan in force is
+  [PREREGISTRATION_v2.md](PREREGISTRATION_v2.md), and every later change is a
+  dated deviation. The protocol was frozen before the confirmation seeds were
+  run.
 
-## Design goals (from the project plan)
+Everything needed to write the paper lives in [`paper/`](paper/README.md):
+- the lab notebook;
+- related work;
+- the methods draft;
+- statistical summaries;
+- scripts that rebuild every figure from the raw records.
 
-1. **Separate simulation from real models.** v0 is rule-based only. Every
-   experiment record and dashboard view is labelled with its `engine` type so a
-   rule-based result is never mistaken for a measurement of a real LLM. An
-   optional LLM-controlled agent can be dropped into the *same* environment
-   later for comparison; it is not part of v0.
-2. **Make variation and selection explicit.** Agents carry a small heritable
-   genome (decision parameters) plus inherited memory. Replication copies both
-   with mutation, so there is heritable variation and differential reproductive
-   success — real selection, not just note-passing.
-3. **Keep discovery and confirmation separate.** The analysis layer finds
-   *candidate* effects on one set of seeds, then confirms them on fresh,
-   previously-unused seeds. Reports carry effect sizes, uncertainty, the number
-   of comparisons made, and failed replications — never bare "confidence %".
-4. **Preserve provenance from day one.** Every run writes an immutable record:
-   code commit, simulator version, seed, full parameters, and summary metrics.
-   Raw records go to a local SQLite database; summaries and figures are
-   published to a static dashboard (`docs/`, GitHub Pages).
+### Running it
 
-## The model in one paragraph
+```bash
+pip install numpy matplotlib
+python -m learners.calibrate                                     # calibration (single learners only)
+python -m learners.run --phase pilot --seeds 100-109             # exploratory pilot
+python -m learners.run --phase confirmation --seeds 7000-7029    # needs the frozen protocol
+python -m learners.analysis --phase confirmation                 # pre-registered tests
+python paper/figures/make_figures.py --phase confirmation        # figures
+python -m learners.site                                          # website data (docs/study1.json)
+python -m unittest discover -s tests                             # tests
+```
 
-A **world** is a set of nodes, each with hidden properties (an `arch`
-category, a difficulty, a reliability, a capacity). An **agent** lives on a
-node and, each step, chooses from a fixed abstract action set
-(`OBSERVE, MOVE, TEST, REPLICATE, RECORD, WAIT`). Whether a replication attempt
-succeeds depends on the target's difficulty, the agent's genome, and whether the
-agent's **inherited memory** contains a relevant, *still-accurate* observation
-for that node's `arch`. The environment can **shift** partway through a run
-(which archs are viable flips), which is where stale inherited memory can become
-a trap. The measured outcome is the **reproductive number R** (mean successful
-descendants per agent) plus population survival and how strategies change.
+Big batches run on GitHub Actions. Push a branch named `run/study1-<name>`
+containing `learners/batch.json` (for example
+`{"phase": "confirmation", "seeds": "7000-7029"}`). The workflow
+`.github/workflows/study1.yml` splits the batch over 20 machines and commits
+`learners/results/<phase>.jsonl` back to that branch.
 
-## The long run
+## The ecology world (side exhibit)
 
-Alongside the controlled studies there is one **persistent world** (`longrun/`)
-that is never reset. Four habitats with different conditions (stable, drifting,
-shock-prone, harsh) are linked by migration routes. Agents carry a small
-behaviour *program* — an ordered list of `if <feature> <op> <threshold>:
-<ACTION>` rules plus a default — and mutation can add, delete, and rewire rules,
-so strategy structure itself evolves. Agents forage on limited, regrowing
-resources, reproduce, test and share knowledge, move, migrate, and can steal
-energy from neighbours on the same node.
+One persistent world (`longrun/`) that is never reset. It has four habitats
+linked by migration. Agents carry small evolving rule-list programs and
+compete for regrowing resources. A scheduled GitHub Action advances it once a
+day, and `docs/world.html` shows it.
 
-A scheduled GitHub Action advances the world once a day from its checkpoint,
-commits the new state, and republishes the viewer (`docs/world.html`). Advances
-are deterministic: resuming from a checkpoint gives exactly the same history as
-an uninterrupted run (tested). Any change to `longrun/config.json` after the
-world starts is logged as an **intervention** and shown on the viewer.
+Advances are deterministic, and any change to `longrun/config.json` is logged
+as an intervention. It is for watching and for generating hypotheses, not for
+causal claims.
 
-A single long run is a sample of one: it is for watching and for generating
-hypotheses. Claims about *why* something happens belong in controlled,
-replicated studies (`experiments/`).
+```bash
+python -m longrun.advance --ticks 4000   # continue from longrun/state/
+```
 
 ## Layout
 
 ```
-sim/            study engine (world, agent, engine) — pure, deterministic given a seed
-experiments/    immutable records (SQLite), batch runner, analysis, the studies
-dashboard/      report generator: results -> docs/ data for GitHub Pages
-longrun/        the persistent multi-habitat world, its checkpoint (state/), and the daily advance
-docs/           static site for GitHub Pages: index.html (studies), world.html (the long run)
-tests/          reproducibility, containment, and persistence tests
+learners/   Study 1: networks, world, life histories, runner, analysis, site data
+paper/      notebook, related work, methods, results summaries, figure scripts
+longrun/    the ecology world, its checkpoint (state/) and the daily advance
+docs/       the website: index.html (Study 1), world.html (ecology world)
+tests/      learner, equal-compute, reproducibility, containment and long-run tests
 ```
 
-## Running it
+## History
 
-No third-party packages are required — it runs on the Python 3 standard library.
-
-```bash
-# run the headline study (writes an immutable record per run to results.db)
-python -m experiments.study_inheritance
-
-# analyse: find candidate effects, then confirm on fresh seeds
-python -m experiments.analysis
-
-# regenerate the static dashboard under docs/ from the results database
-python -m dashboard.generate
-
-# advance the persistent world (continues from longrun/state/)
-python -m longrun.advance --ticks 4000
-
-# tests
-python -m unittest discover -s tests
-```
-
-`results.db` (raw history) is git-ignored; the committed record of findings is
-the summary JSON under `docs/` and the per-finding snapshots under
-`experiments/snapshots/`.
+An earlier "lab v0" studied inherited memory in a rule-based replication
+simulator. Its one candidate finding did not replicate on fresh seeds. It was
+retired on 2026-10-13 when Study 1 replaced it. Its code and results remain in
+the git history: see commit 15f7aa0 and the merge of PR #1.

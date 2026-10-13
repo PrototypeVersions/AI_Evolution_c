@@ -21,7 +21,7 @@ import os
 import time
 from typing import Dict, List
 
-from experiments.records import code_commit
+from .provenance import code_commit
 
 from .model import ACTIONS, FAMILIES, FAMILY_OF, World, describe_program, program_shape
 

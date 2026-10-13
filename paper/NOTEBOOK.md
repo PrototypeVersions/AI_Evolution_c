@@ -238,3 +238,29 @@ commit (75e8f0a) is dated 01:37:30Z and the confirmation run on GitHub
 (run 38333032173) started at 01:37:42Z; those are the authoritative times.
 `frozen_at` is left as written so the protocol hash stays the one the
 confirmation records carry. Tests passed on GitHub for the frozen commit.
+
+## 2026-10-13 ~01:55 — Website rebuilt around Study 1; lab v0 retired
+
+- **Website.** `docs/index.html` is now a black-background page about Study
+  1. Every number on it comes from `docs/study1.json`, which
+  `python -m learners.site` builds from the raw records. While confirmation
+  runs, it shows the pilot, clearly labelled exploratory. The arm colours are
+  the validated dark categorical palette; secondary arms use dashed lines.
+- **Why the stream figure gained a difficulty strip.** Blake read the
+  falling accuracy curves as learners getting worse. They are not: the tasks
+  get harder, from 2 bits per skill at the start to about 4–5 by era 120.
+  Figure 1 and the site now show the mean size of the current task's skills
+  above the accuracy curves. Worth keeping in the paper, since any reader
+  will have the same first reaction.
+- **Observation (pilot, exploratory).** At the 90% readout threshold, the
+  immortal learner in the slow world knows only 2 of 23 skills at era 120:
+  roughly the two in the current task. It still keeps up at about 90% on the
+  stream, so forgotten skills must be relearned quickly. Readout below 90%
+  may still carry useful structure ("savings"). KNOWLEDGE measures what is
+  explicitly retained, not what is quick to recover. Note this in the
+  discussion.
+- **Lab v0 retired.** `sim/`, `experiments/`, `dashboard/`, `docs/data.json`
+  and `tests/test_sim.py` were deleted. Their one candidate finding
+  ("unrelated memory recovers best") did not replicate on fresh seeds. They
+  remain in git history (commit 15f7aa0, merge of PR #1). The long run's
+  only dependency on them, `code_commit`, moved to `longrun/provenance.py`.

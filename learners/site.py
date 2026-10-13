@@ -46,7 +46,7 @@ def regime_block(reg: Dict) -> Dict:
         arms[arm] = {k: v for k, v in keep.items() if not (isinstance(v, list) and v and v[0] != v[0])}
     tests = [{"id": m["id"], "label": m["label"], "predicted": m["predicted"], "verdict": m["verdict"],
               "p": m["p"], "p_holm": m["p_holm"],
-              "parts": [{k: p[k] for k in ("a", "b", "outcome", "diff", "ci", "dz", "per_seed")}
+              "parts": [{k: p[k] for k in ("a", "b", "outcome", "diff", "ci", "dz", "per_seed", "direction_ok")}
                         for p in m["parts"]]}
              for m in reg["family"] + reg.get("secondary", [])]
     return {"R": reg["R"], "L": reg["L"], "arms": r(arms), "tests": r(tests)}
@@ -68,6 +68,7 @@ def world_block(recs: List[Dict], R: int, L: int) -> Dict:
     return {"seed": seed, "R": R, "L": L, "parents": w["parents"][:n_stream],
             "degrees": w["degrees"][:n_stream],
             "arrives": [0 if k < 4 else (k - 3) * R for k in range(n_stream)],
+            "tasks": scratch[0]["tasks"],
             "knowledge": r(known, 3)}
 
 
