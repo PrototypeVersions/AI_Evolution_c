@@ -1034,13 +1034,13 @@ function headline(data) {
     : `<span class="pulse done"></span><span><strong>Showing the confirmation.</strong> ${data.n_seeds} worlds (seeds ${data.seeds[0]}–${data.seeds[1]}) that no version of the code had seen, run under the frozen protocol.</span>`;
   const led = document.getElementById("ledger");
   const items = [
-    ["Predictions first", `Hypotheses and the analysis were committed before any data: <a href="${REPO}/blob/learners-v0/PREREGISTRATION_v2.md">PREREGISTRATION_v2.md</a>. Every later change is a dated, justified deviation.`],
+    ["Predictions first", `Hypotheses and the analysis were committed before any data: <a href="${REPO}/blob/main/PREREGISTRATION_v2.md">PREREGISTRATION_v2.md</a>. Every later change is a dated, justified deviation.`],
     ["A frozen protocol", `Settings are locked before confirmation. Hash <code>${data.frozen_protocol_hash || data.protocol_hash}</code>, and every run record carries the hash it ran under.`],
     ["Fresh worlds", `The confirmation uses seeds 7000–7029, never touched while the study was designed or debugged.`],
     ["Equal compute, tested", `Every life history's operations are counted per era, and a test fails if any of them overspends.`],
     ["Corrected for many tests", `${data.family_size} pre-registered comparisons, corrected together with Holm–Bonferroni. Secondary questions are kept in their own family.`],
-    ["Everything public", `Raw records, the code that made them (commit recorded in each record), and scripts that rebuild every number and figure: <a href="${REPO}/tree/learners-v0/paper">paper/</a>.`],
-    ["Mistakes are logged", `The lab notebook records what went wrong and what changed, including two versions of this study that were stopped: <a href="${REPO}/blob/learners-v0/paper/NOTEBOOK.md">NOTEBOOK.md</a>.`],
+    ["Everything public", `Raw records, the code that made them (commit recorded in each record), and scripts that rebuild every number and figure: <a href="${REPO}/tree/main/paper">paper/</a>.`],
+    ["Mistakes are logged", `The lab notebook records what went wrong and what changed, including two versions of this study that were stopped: <a href="${REPO}/blob/main/paper/NOTEBOOK.md">NOTEBOOK.md</a>.`],
     ["Contained", `Small numpy networks on synthetic bits. No networking, no external models, no code generation.`],
   ];
   items.forEach(([b, s]) => led.appendChild(H("div", {}, `<b>${b}</b><span>${s}</span>`)));
