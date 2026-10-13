@@ -49,7 +49,8 @@ def regime_block(reg: Dict) -> Dict:
               "parts": [{k: p[k] for k in ("a", "b", "outcome", "diff", "ci", "dz", "per_seed", "direction_ok")}
                         for p in m["parts"]]}
              for m in reg["family"] + reg.get("secondary", [])]
-    return {"R": reg["R"], "L": reg["L"], "arms": r(arms), "tests": r(tests)}
+    # nothing the page shows at 0.1 point is rounded here: rounding twice can move a value by 0.1
+    return {"R": reg["R"], "L": reg["L"], "arms": arms, "tests": tests}
 
 
 def world_block(recs: List[Dict], R: int, L: int) -> Dict:
@@ -69,7 +70,8 @@ def world_block(recs: List[Dict], R: int, L: int) -> Dict:
             "degrees": w["degrees"][:n_stream],
             "arrives": [0 if k < 4 else (k - 3) * R for k in range(n_stream)],
             "tasks": scratch[0]["tasks"],
-            "knowledge": r(known, 3)}
+            # readouts are scored on 2,000 inputs, so 4 decimals is exact and a 0.9 threshold stays exact
+            "knowledge": r(known, 4)}
 
 
 def difficulty(recs: List[Dict], R: int) -> List[float]:

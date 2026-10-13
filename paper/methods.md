@@ -28,10 +28,12 @@ s_k(x) = ∏_{i∈S_k} x_i of a set S_k of input bits.
 Gradient descent learns sparse parities efficiently when each one can be
 reached from an already learned parity by adding one variable (the
 merged-staircase property; Abbe et al., 2022), but finds isolated high-order
-parities very hard. In an exploratory check, fresh networks failed to learn a
-5- or 6-bit parity within 4,000 steps in 5 of 6 tries, while networks that
-climbed one bit at a time needed 75–300 steps per step
-(`exploratory/staircase_check.txt`). Accumulated knowledge is therefore
+parities very hard. In an exploratory check at learning rate 3e-3, fresh
+networks failed to learn a 5- or 6-bit parity within 4,000 steps in 5 of 6
+tries, while networks that climbed one bit at a time needed 75–300 steps per
+step. At the study's learning rate of 1e-3, fresh networks failed in 4 of 6
+tries (the other two needed about 3,800 steps) and climbing took 175–725 steps
+per step (`exploratory/staircase_check.txt`). Accumulated knowledge is therefore
 necessary to keep up.
 
 **Tasks.**

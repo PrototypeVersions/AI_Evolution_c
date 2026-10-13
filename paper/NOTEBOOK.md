@@ -349,3 +349,75 @@ childhood.
 and `docs/index.html` shows the findings and the verdict matrix. Wording on
 the site was checked against the summary table; where a result was
 descriptive and not tested (RESET vs IMMORTAL on the stream) the site says so.
+
+## 2026-10-13 02:35 — Site went live; an audit of its claims found 21 to correct
+
+Blake approved merging PR #3, and the site went live at 02:07 UTC (merge
+commit bf4237d). Because the page is now public, every factual claim on it
+was checked against the raw records, the summary, the protocol and the code.
+Four independent auditors covered the page in parts. A second reviewer per
+part then tried to refute each reported error, and only the errors that
+survived were kept: 25 reports, 21 distinct problems. None of them changes
+a verdict, but several overstated or misdescribed a result. All were fixed
+on branch `site-audit-fixes`. Three more reviewers then checked the fixes
+(numbers, meaning, code) and found 14 smaller problems in the new wording,
+which were fixed too. The ones worth remembering for the paper:
+
+- **Equal compute is not equal updates.** The page said one era is "800
+  training steps, the same for everyone". In fact every arm gets the same
+  compute. A population member takes 200 steps per era, and a teaching era
+  has 400 task steps. This matters because CLONE's lead on the next step
+  (H3c) may come partly from each member wearing out more slowly. The page
+  now says so in the CLONE finding, and the paper must too.
+- **FRONTIER is a probe, and an accuracy.** "Could learn the next skill
+  94% of the time" was wrong twice over.
+  - FRONTIER measures a discarded copy given 800 steps on one skill, not
+    something the population did in its own life.
+  - It is a mean accuracy, not a success rate. In the slow world CLONE
+    fully learned (≥ 90%) 84–87% of next-skill probes, against 31% for
+    IMMORTAL. At the default learning rate CLONE's share falls to 63–72%.
+  - Most probes end near 50% or near 100%, but not the immortal learner's
+    in the slow world: 44% of its probes fall between 55% and 90%. Report
+    the share fully learned alongside the mean, never instead of it.
+- **ONLINE is an average over eras 61–120.** The immortal learner
+  "averages" 93%; it slides from 100% at era 60 to about 86% at era 120.
+- **Null results were stated too strongly.**
+  - H7 slow/L5 is +2.5 points with a CI that excludes zero, but Holm
+    p = 0.17.
+  - H2a in the slow world is +3.5 and −3.8 by lifespan, and neither
+    survives correction.
+  - In the fast world, H2a is a reliable reversal, not a null.
+- **H1 counts each world once.** IMMORTAL has no lifespan, so H1's "four"
+  results are two results, each counted twice. The pre-registered family
+  still counts four members, as planned; the page now says "both worlds".
+- **What the immortal learner keeps.** At era 120 it knows 75% of the two
+  skills in its current task in the slow world, but only 25% of the skills
+  from its last five tasks. In the fast world it knows 3% of its current
+  task's skills.
+- **TEACH vs RESTART on the stream is descriptive.** It was never tested.
+  The page now says the cost "seems to" come from starting over.
+- **The honesty ledger said "before any data".** That was wrong.
+  - H1–H7 and the analysis came before any v2 run, but one prior used the
+    stopped v1 pilot.
+  - After the v2 pilot, the FRONTIER probe behind H3a, H3c and H4a was
+    lengthened from 100 steps to one era (deviation 3), and S1–S6 were
+    added.
+  - Everything came before confirmation data, which is the claim that
+    matters. The paper must state the FRONTIER change wherever H3c is
+    reported.
+- **Smaller fixes.**
+  - The stream chart is a trailing 5-era average; the caption, hover and
+    table now say so.
+  - The guessing and fresh-network lines are labelled.
+  - The secondary family is corrected over its own 18 tests.
+  - "Worlds" now means only seeds or the fast and slow pace. The four
+    pace × lifespan combinations are "conditions" ("settings" clashed with
+    the learning settings GENES inherits).
+  - The staircase check numbers are at learning rate 3e-3, and the 1e-3
+    numbers are now given too (also corrected in `methods.md`).
+- **Rounding.** `learners/site.py` rounded every value to 4 decimals, and
+  the page then rounded again to 0.1 point. That moved about 26 displayed
+  values by 0.1 from the summary. Values the page displays are now passed
+  unrounded (the data file grows from 111 KB to 175 KB). Every test
+  statistic and every arm value in `docs/study1.json` is identical to
+  `results/confirmation_summary.json`.
