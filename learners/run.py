@@ -202,7 +202,7 @@ def _work(args):
     return {**meta, **rec, "created_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")}
 
 
-def line(rec: Dict) -> str:
+def fmt_line(rec: Dict) -> str:
     return (f"  {rec['arm']:8s} seed {rec['seed']} R={rec['R']} L={rec['L']:2d}  "
             f"knows {rec['FINAL_KNOWLEDGE']:.2f} (depth {rec['FINAL_DEPTH']:2d})  "
             f"frontier {rec['FINAL_FRONTIER']:.3f}  novel {rec['FINAL_NOVEL']:.3f}  "
@@ -257,14 +257,14 @@ def main(argv=None) -> None:
             for rec in pool.imap_unordered(_work, work):
                 f.write(json.dumps(rec) + "\n")
                 f.flush()
-                print(line(rec), flush=True)
+                print(fmt_line(rec), flush=True)
     else:
         with open(path, "a") as f:
             for w in work:
                 rec = _work(w)
                 f.write(json.dumps(rec) + "\n")
                 f.flush()
-                print(line(rec), flush=True)
+                print(fmt_line(rec), flush=True)
 
 
 if __name__ == "__main__":
