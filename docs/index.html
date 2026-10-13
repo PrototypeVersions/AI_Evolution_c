@@ -309,11 +309,14 @@
           or odd number of them are −1. The world starts with four 2-bit skills. Every few eras a new skill appears,
           made by adding one bit to a skill that already exists.</p>
         <p>Big parities are almost impossible to learn from scratch, but easy if you already know the smaller one
-          they grew from (the "staircase" effect, Abbe et al., 2022). In our check, fresh networks failed at 5- and
-          6-bit skills in 5 of 6 tries, while networks that climbed one bit at a time needed 75 to 300 steps per step.
+          they grew from (the "staircase" effect, Abbe et al., 2022). In our check (learning rate 3e-3, at most 4,000
+          steps), fresh networks failed at 5- and 6-bit skills in 5 of 6 tries, while networks that climbed one bit at a
+          time needed 75 to 300 steps per step. At the study's learning rate of 1e-3, fresh networks failed in 4 of 6
+          tries (the other two needed about 3,800 steps) and climbing took 175 to 725 steps per step.
           <b>So knowledge has to accumulate</b>, and forgetting or losing the ability to learn is costly.</p>
-        <p>Each era, the task is to tell apart four combinations of two skills. One era is 800 training steps
-          of 32 examples, the same for everyone.</p>
+        <p>Each era, the task is to tell apart four combinations of two skills. Every learner gets the same compute
+          each era, the cost of 800 training steps of 32 examples. A single network takes all 800 steps, each member of
+          a population of four takes 200, and a teaching era spends half of it on the lesson.</p>
         <p class="muted" style="font-size:14px">Drag the slider to watch a real world grow, and pick a learner to see
           which skills it can still read out at each check-up.</p>
       </div>
@@ -360,32 +363,43 @@
       </div>
       <div class="findings">
         <article class="finding"><h3>Living forever wears out the ability to learn</h3>
-          <p>By era 120 the immortal learner learns unrelated new skills no better than guessing (50–52%), against 67%
-            for a fresh network, and 43–50% of its neurons have gone silent.</p>
-          <div class="src">H1 · held in all four worlds</div></article>
+          <p>By era 120 the immortal learner learns unrelated new skills at or barely above guessing (50–52%, down from
+            about 55% at era 20), against 67% for a fresh network, and 43–50% of its neurons have gone silent.</p>
+          <div class="src">H1 · held in both worlds (the immortal learner has no lifespan, so both lifespans use the same runs)</div></article>
         <article class="finding"><h3>But for keeping up, a long life is hard to beat</h3>
-          <p>In the slow world the immortal learner stays at 93% on the current task. Strategies that start children
-            from scratch fall to 42–77%, and a weight-copying population reaches 80%. Shrink-and-perturb, which loosens
+          <p>In the slow world the immortal learner averages 93% on the current task over eras 61–120, though it slides
+            to about 86% by era 120. Strategies that start children from scratch average 42–77% (81% for the secondary
+            four-era childhood at lifespan 20), and a weight-copying population 80%. Shrink-and-perturb, which loosens
             the same network instead of replacing it, matches the immortal learner at 94%.</p>
           <div class="src">H6 held in the slow world · the reset comparison is descriptive, not pre-registered</div></article>
-        <article class="finding"><h3>Copying weights keeps the next step open</h3>
-          <p>A population that copies its best members' weights could learn the next skill within one era 94% of the
-            time in the slow world, against 75% for the immortal learner. It led in all four worlds. We predicted it
-            would not. Most of the lead remains at a fixed learning rate (85–90%).</p>
-          <div class="src">H3c · held in all four worlds, against our prediction</div></article>
+        <article class="finding"><h3>A weight-copying population keeps the next step open</h3>
+          <p>A population copies its best members' weights. In the slow world, when a copy of its best network was given
+            one era's full budget to learn each of the next skills, it fully learned about 85% of them (93–94% accuracy,
+            where 50% is guessing), against 31% for the immortal learner (75%). It led in all four conditions. We
+            predicted it would not. Most of the lead remains at a fixed learning rate (85–90% accuracy, with 63–72%
+            fully learned). In its own life each of the four networks trains on only a quarter of the budget, which may
+            itself slow the wear; this study cannot separate that from the copying.</p>
+          <div class="src">H3c · held in all four conditions, against our prediction</div></article>
         <article class="finding"><h3>Teaching a child did not pass knowledge on</h3>
-          <p>Taught children knew no more skills than restarted ones in any world, and a 16-era childhood did not help.
-            In the fast world a taught child took the next step better than the immortal learner (+4 to 5 points),
-            but no better than a child started from scratch. In the slow world teaching cost 17–30 points on the
-            stream.</p>
-          <div class="src">H7 and S1 not shown · H3a held in the fast world · H3b reversed in three worlds</div></article>
+          <p>Taught children did not reliably know more skills than restarted ones (the one gap, 2.5 points in the slow
+            world at lifespan 5, did not survive correction), and a 16-era childhood did not help. In the fast world a
+            taught child took the next step better than the immortal learner (+4 to 5 points), but no better than a
+            child started from scratch. In the slow world taught children trailed the immortal learner by 16–30 points
+            on the stream, as much as untaught restarted ones, so the cost seems to come from starting over rather than
+            from teaching (a descriptive comparison, not a tested one).</p>
+          <div class="src">H7 and S1 not shown · H3a held in the fast world · H3b reversed in three conditions</div></article>
         <article class="finding"><h3>Evolution beats chance, weights beat evolution</h3>
-          <p>Inheriting learning settings with selection beat random search on the stream in three of four worlds, by
-            3.5–8.7 points. Inheriting weights kept more skills than inheriting settings in three of four.</p>
-          <div class="src">H5 and H2b · each held in three of four worlds</div></article>
+          <p>Inheriting learning settings with selection beat random search on the stream in three of the four
+            conditions, by 3.5–8.7 points. Inheriting weights kept more skills than inheriting learning settings in three
+            of the four.</p>
+          <div class="src">H5 and H2b · each held in three of the four conditions</div></article>
         <article class="finding"><h3>The immortal learner does not remember more</h3>
-          <p>At era 120 it had kept no more skills than a learner that restarts from scratch: slightly fewer in the fast
-            world, and no clear difference in the slow one. It keeps what it is practising and forgets the rest.</p>
+          <p>At era 120 it had not kept more skills than a learner that restarts from scratch. In the fast world it kept
+            slightly but reliably fewer (0.2% vs 1.1% of skills). In the slow world it depended on lifespan (3.5 points
+            more than restarting every 5 eras, 3.8 fewer than restarting every 20), and neither of those two differences
+            survived correction. In the slow world it still knows most of the two skills in its current task (75%), but
+            only about a quarter of those from its last five tasks; in the fast world it knows almost none, even of its
+            current task.</p>
           <div class="src">H2a · reversed in the fast world, not shown in the slow world</div></article>
       </div>
     </div>
@@ -400,8 +414,8 @@
 
     <div class="panel">
       <h3>Keeping up with a world that gets harder</h3>
-      <p class="sub">Top: how big the current task's skills are. Below: each learner's accuracy on the current task
-        (25% is guessing). The tasks keep getting harder, so a perfect learner would stay flat at 100%; a falling
+      <p class="sub">Top: how big the current task's skills are. Below: each learner's accuracy on the current task,
+        averaged over the 30 worlds and over the last five eras (25% is guessing). The tasks keep getting harder, so a perfect learner would stay flat at 100%; a falling
         line means it stopped keeping up. Every learner faces exactly the same tasks.</p>
       <div class="chart" id="online"></div>
       <details class="table"><summary>Show as a table</summary><div id="online-table"></div></details>
@@ -409,8 +423,10 @@
 
     <div class="panel">
       <h3>At the end of 120 eras</h3>
-      <p class="sub">Dots are averages over worlds; bars are 95% confidence intervals of the average. The dashed
-        line is a fresh, untrained network.</p>
+      <p class="sub">Dots are averages over the 30 worlds; bars are 95% confidence intervals of the average. Dotted
+        lines mark guessing. Dashed lines mark a fresh network put through the same test. Keeping up has none, because
+        a fresh network has no stream to keep up with, and Remembering has none, because a fresh network knows no
+        skills.</p>
       <div class="chart" id="endpoints"></div>
     </div>
 
@@ -423,8 +439,9 @@
       </div>
       <div class="panel">
         <h3>Taking the next step, over time</h3>
-        <p class="sub">Could the learner pick up the next skills within one era? 50% is guessing; the dashed line is a
-          fresh network.</p>
+        <p class="sub">Could the learner pick up the next skills within one era? The grey dotted line at 50% is guessing.
+          The grey dashed line is a fresh network put through the same test; it falls too, because the next skills
+          keep getting bigger.</p>
         <div class="chart" id="frontier"></div>
       </div>
     </div>
@@ -437,7 +454,8 @@
     <h2>What we expected, and whether it held</h2>
     <p class="intro" id="pred-intro">Every prediction below was committed to the repository before any confirmation
       data existed. A result counts only if it holds on 30 worlds no code has ever seen, after correcting for the 44
-      tests being run (Holm–Bonferroni).</p>
+      primary tests being run (Holm–Bonferroni). The secondary rows (S1–S6) are corrected separately, over their own
+      18 tests.</p>
     <div class="panel"><table class="matrix" id="matrix"></table>
       <div class="vkey" id="vkey"></div></div>
   </div>
@@ -510,7 +528,7 @@ const INFO = {
   SCRATCH: { name: "Fresh network", short: "Fresh" },
 };
 const PLAIN = {
-  H1: ["A mind that lives forever slowly loses the ability to learn new things.", "Immortal: learning unrelated skills, end vs start"],
+  H1: ["A mind that lives forever slowly loses the ability to learn new things.", "Immortal: learning unrelated skills, era 120 vs era 20"],
   H2a: ["Knowledge needs inheritance: the immortal learner knows more at the end than one that restarts.", "Immortal vs Restart: skills known"],
   H2b: ["Copied weights carry knowledge; inherited settings don't.", "Clone vs Genes: skills known"],
   H3a: ["A taught child takes the next step better than an immortal learner.", "Teach vs Immortal: next step"],
@@ -853,7 +871,7 @@ function onlineChart(data) {
     const e = Math.max(0, Math.min(data.eras - 1, Math.round((px - m.l) / (W - m.l - m.r) * (data.eras - 1))));
     cross.setAttribute("x1", x(e)); cross.setAttribute("x2", x(e)); cross.setAttribute("opacity", 1);
     const rows = shown.map((a) => [a, curves[a][e]]).sort((p, q) => q[1] - p[1]);
-    tip.innerHTML = `<div class="h">Era ${e + 1}</div><div class="r"><span></span><span>task size</span><b>${d[e].toFixed(1)} bits</b></div><div class="sep"></div>` +
+    tip.innerHTML = `<div class="h">${e === 0 ? "Era 1" : `Eras ${Math.max(1, e - 3)}–${e + 1}`}</div><div class="r"><span></span><span>task size</span><b>${d[e].toFixed(1)} bits</b></div><div class="sep"></div>` +
       rows.map(([a, v]) => `<div class="r"><i class="dot" style="background:${COLOR(a)}"></i><span>${INFO[a].name}</span><b>${pct(v)}</b></div>`).join("");
     tip.style.opacity = 1;
     const tw = tip.offsetWidth;
@@ -865,7 +883,7 @@ function onlineChart(data) {
   hit.addEventListener("pointerleave", () => { tip.style.opacity = 0; cross.setAttribute("opacity", 0); });
   // table view
   const tb = document.getElementById("online-table");
-  tb.innerHTML = `<table><tr><th>Life history</th>${[20, 40, 60, 80, 100, 120].map((e) => `<th>era ${e}</th>`).join("")}<th>eras 61–120</th></tr>` +
+  tb.innerHTML = `<table><tr><th>Life history</th>${[20, 40, 60, 80, 100, 120].map((e) => `<th>eras ${e - 4}–${e}</th>`).join("")}<th>eras 61–120</th></tr>` +
     shown.map((a) => `<tr><td>${INFO[a].name}</td>${[19, 39, 59, 79, 99, 119].map((e) => `<td>${pct(curves[a][e], 1)}</td>`).join("")}<td>${pct(reg.arms[a].ONLINE[0], 1)}</td></tr>`).join("") + "</table>";
 }
 
@@ -904,9 +922,15 @@ function endpoints(data) {
       S("line", { x1: x(v), x2: x(v), y1: top - 6, y2: bottom, class: "gridline" }, g);
       S("text", { x: x(v), y: bottom + 16, "text-anchor": "middle", class: "tick" }, g).textContent = pct(v);
     });
-    if (chance !== null) S("line", { x1: x(chance), x2: x(chance), y1: top - 6, y2: bottom, stroke: "#6a6862", "stroke-dasharray": "2 4" }, g);
+    if (chance !== null) {
+      S("line", { x1: x(chance), x2: x(chance), y1: top - 6, y2: bottom, stroke: "#6a6862", "stroke-dasharray": "2 4" }, g);
+      S("text", { x: x(chance) - 4, y: bottom + 32, "text-anchor": "end", class: "tick" }, g).textContent = "guessing";
+    }
     const fresh = reg.arms.SCRATCH && reg.arms.SCRATCH[key];
-    if (fresh && key !== "FINAL_KNOWLEDGE") S("line", { x1: x(fresh[0]), x2: x(fresh[0]), y1: top - 10, y2: bottom, stroke: "#bdbbb3", "stroke-dasharray": "5 4", "stroke-width": 1.2 }, g);
+    if (fresh && key !== "FINAL_KNOWLEDGE") {
+      S("line", { x1: x(fresh[0]), x2: x(fresh[0]), y1: top - 10, y2: bottom, stroke: "#bdbbb3", "stroke-dasharray": "5 4", "stroke-width": 1.2 }, g);
+      S("text", { x: x(fresh[0]) + 4, y: bottom + 32, class: "tick" }, g).textContent = "fresh network";
+    }
     arms.forEach((a, j) => {
       const yy = top + j * rowH + rowH / 2;
       S("text", { x: lx - 10, y: yy + 4, "text-anchor": "end", "font-size": 12.5, fill: css("--ink-2") }, g).textContent = INFO[a].short;
@@ -1013,7 +1037,7 @@ function matrix(data) {
   const key = document.getElementById("vkey");
   key.innerHTML = data.exploratory
     ? `<span><span class="v lean-yes">▲ 5.0</span> the effect points the way the claim says, by 5.0 points</span><span><span class="v lean-no">▼ 5.0</span> it points the other way</span><span>Pilot only: these are directions, not verdicts. Hover a cell for the numbers.</span>`
-    : `<span><span class="v sup">✓ true</span> the claim held after correction</span><span><span class="v rev">↺ reversed</span> the opposite held</span><span><span class="v">– unclear</span> not established either way</span><span>Numbers are the size of the effect in accuracy points. Hover a cell for the interval and p-values.</span>`;
+    : `<span><span class="v sup">✓ true</span> the claim held after correction</span><span><span class="v rev">↺ reversed</span> the opposite held</span><span><span class="v">– unclear</span> not established either way</span><span>Numbers are the size of the effect in percentage points: of accuracy, or of the share of skills known in the “skills known” rows. Hover a cell for the interval and p-values.</span>`;
   if (data.exploratory) document.getElementById("pred-intro").innerHTML += ` <b>Right now this shows the pilot</b>, which is exploratory: it shows only which way each effect points.`;
 }
 
@@ -1024,7 +1048,7 @@ function headline(data) {
     ? `<span class="pulse"></span><span><b>Pilot done, confirmation running.</b> The charts show the exploratory pilot on ${data.n_seeds} worlds until 30 new worlds are finished.</span>`
     : `<span class="pulse done"></span><span><b>Confirmed on ${data.n_seeds} new worlds.</b> ${fmtInt(data.n_records)} runs, analysed exactly as pre-registered.</span>`;
   const stats = document.getElementById("stats");
-  [[ARMS.length, "ways to live"], [data.eras, "eras per run"], [fmtInt(data.steps_per_era * data.batch), "training examples per era, for everyone"],
+  [[ARMS.length, "ways to live"], [data.eras, "eras per run"], [fmtInt(data.steps_per_era * data.batch), "training examples' worth of compute per era, for everyone"],
    [fmtInt(data.n_records), data.exploratory ? "pilot runs so far" : "runs"]].forEach(([b, s]) =>
     stats.appendChild(H("span", { class: "stat" }, `<b>${b}</b> ${s}`)));
   document.getElementById("findings-block").hidden = data.exploratory;
@@ -1034,7 +1058,7 @@ function headline(data) {
     : `<span class="pulse done"></span><span><strong>Showing the confirmation.</strong> ${data.n_seeds} worlds (seeds ${data.seeds[0]}–${data.seeds[1]}) that no version of the code had seen, run under the frozen protocol.</span>`;
   const led = document.getElementById("ledger");
   const items = [
-    ["Predictions first", `Hypotheses and the analysis were committed before any data: <a href="${REPO}/blob/main/PREREGISTRATION_v2.md">PREREGISTRATION_v2.md</a>. Every later change is a dated, justified deviation.`],
+    ["Predictions first", `H1–H7 and their analysis were committed before any run of this version of the world (an earlier, stopped pilot informed one prior). After the pilot, the next-step probe behind H3a, H3c and H4a was lengthened to a full era, because it sat near guessing for every learner, and S1–S6 were added. All of it was committed before any confirmation data: <a href="${REPO}/blob/main/PREREGISTRATION_v2.md">PREREGISTRATION_v2.md</a>. Every later change is a dated, justified deviation.`],
     ["A frozen protocol", `Settings are locked before confirmation. Hash <code>${data.frozen_protocol_hash || data.protocol_hash}</code>, and every run record carries the hash it ran under.`],
     ["Fresh worlds", `The confirmation uses seeds 7000–7029, never touched while the study was designed or debugged.`],
     ["Equal compute, tested", `Every life history's operations are counted per era, and a test fails if any of them overspends.`],
