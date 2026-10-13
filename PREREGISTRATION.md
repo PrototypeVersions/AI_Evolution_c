@@ -242,3 +242,25 @@ analysis plan (§9) are unchanged unless an entry says otherwise.
      reaches 90%);
    - K = 50 probe steps, which gives fresh networks 41% on NOVEL probes
      (K = 100 would give 80%).
+3. **2026-10-13, after the first 51 pilot runs: the probe was fixed.**
+   - **What was wrong.** Every single-network arm scored below a fresh
+     network on both probes at every checkpoint. On NOVEL they scored 25–30%
+     against 38–45% for a fresh network, and even RESTART networks at most 5
+     eras old did. This held for every arm, so the probe was not measuring
+     reuse or plasticity. It was measuring how hard a confident output layer
+     trained on the previous task is to overwrite in 50 steps.
+   - **The fix.** The probe copy now gets a fresh output layer before
+     fine-tuning. The layer is drawn from the probe's own seed, so it is
+     identical for every arm. This is the standard way to probe what a
+     network's hidden layers have learned.
+   - **What stays the same.** K is unchanged, because calibration used fresh
+     networks, for which the fix changes nothing. Predictions and the analysis
+     plan are unchanged.
+   - **The flawed runs.** They are kept in
+     `learners/results/pilot_v1_probe_flaw.jsonl`.
+   - **Disclosure.** I noticed the problem while looking at pilot results
+     that included differences between arms.
+4. **2026-10-13: superseded by [PREREGISTRATION_v2.md](PREREGISTRATION_v2.md).**
+   The v1 pilot showed the v1 world never rewarded accumulated knowledge, so it
+   could not answer the question. v2 explains why and replaces the world. No
+   confirmation seed was ever run under v1.

@@ -1,0 +1,100 @@
+# Lab notebook
+
+A dated record of decisions, findings and mistakes, kept so the paper can be
+written from it. Times are UTC. The newest entry is at the bottom. Entries are
+never rewritten; corrections are new entries.
+
+## 2026-10-12 — Origins
+
+- **Starting point.** The project began from a discussion of reports about AI
+  systems replicating themselves. The aim is to study AI replication, change
+  and improvement safely: a closed simulation with no networking and no real
+  machines (see `SAFETY.md`).
+- **Lab v0** (PR #1). This was a rule-based simulator of agents with
+  inherited memory, run in a discovery-then-confirmation pipeline.
+  - First study ("inheritance under environment shift", 360 runs): 0 of 6
+    comparisons supported on confirmation seeds.
+  - Known flaw: the "unrelated memory" control did not isolate relevance,
+    because viability was global.
+  - An early pattern ("unrelated memory recovers best") did not replicate on
+    fresh seeds.
+- **The long run** (PR #2). This is a persistent four-habitat artificial-life
+  world with evolvable rule-list programs, advanced daily by GitHub Actions
+  and replayable from genesis. Things seen, which are observations rather
+  than findings:
+  - migration evolved;
+  - the harsh habitat needed 17 failed colonisations before a population held;
+  - conditional stealing rose to about 30% of actions in one habitat;
+  - one founder lineage replaced the rest.
+
+## 2026-10-13 00:30 — Pivot: from ecology to learning machines
+
+- **The critique.** Blake asked whether the ecology was "too biological" to
+  say anything about AI. ChatGPT and Claude agreed it was. Its rules (food,
+  habitats, death) were written by us, so success in it measures our rules,
+  not anything about AI.
+- **The new core question.** Software need not die. So under a fixed compute
+  budget, should a learning machine live forever (keep training one network)
+  or reproduce (hand over to descendants), and what should descendants
+  inherit?
+- **Why it might matter.**
+  - Continual training loses plasticity (Dohare et al. 2024).
+  - Fresh networks taught by a parent can beat the parent (born-again
+    networks; iterated relearning).
+  - Populations explore.
+  - On the other side, birth costs compute and copies inherit faults.
+- **Decision.** Blake chose "Yes, pivot" (00:32). The ecology world stays as
+  a side exhibit.
+- **Pre-registration v1** was committed (51083a4) before any study code
+  existed.
+
+## 2026-10-13 ~00:45 — v1 build and calibration
+
+- **The build.** numpy MLP 32-128-128-4 with hand-written backprop, checked
+  against finite differences (max error ~1e-10). Seven arms with exact
+  multiply-accumulate accounting.
+- **Calibration (fresh networks only).** Learning rate 3e-3 (median 125
+  steps to 90%), S = 200 steps per era, K = 50 probe steps (fresh NOVEL
+  = 41%).
+
+## 2026-10-13 ~01:00 — v1 pilot stopped after 51 runs; two problems
+
+1. **The probe was broken.** Every single-network arm, even networks at most
+   5 eras old, scored below a fresh network on both probes. The probe was
+   measuring how hard a confident old output layer is to overwrite.
+   - Fix: give the probe copy a fresh output layer (v1 deviation 3).
+   - Even after the fix, trained networks learned new skills more slowly
+     than fresh ones. This is consistent with warm-starting results (Ash &
+     Adams 2020).
+2. **The world could not answer the question.** Every task was learnable from
+   scratch within an era (the calibration rule required it). So starting over
+   cost nothing, and knowledge never accumulated: the immortal learner's
+   reuse was near the fresh baseline, because old skills were overwritten.
+
+- **Carried forward.** With a new skill every 2 eras, the immortal learner's
+  online accuracy fell from ~98% to ~60% over 120 eras (2 seeds). Learners
+  restarted every 5 eras stayed at 97–99%. Loss of plasticity is present and
+  strong at this learning rate.
+
+## 2026-10-13 ~01:10 — Staircase check (exploratory)
+
+- **The idea.** Make knowledge compound by making each new skill extend an
+  old one by one bit. Theory says gradient descent learns such "staircases"
+  efficiently but struggles with isolated high-order parities (Abbe et al.
+  2022).
+- **The check.** 24 runs (`paper/exploratory/staircase_check.py`, output in
+  `staircase_check.txt`). At learning rate 3e-3:
+  - fresh networks failed to learn a 5- or 6-bit parity within 4,000 steps
+    in 5 of 6 tries;
+  - climbing one bit at a time took 75–300 steps per step.
+  - The property holds clearly in our networks.
+- **Decision: v2 of the study.**
+  - The staircase world replaces the v1 world.
+  - TEACH now matches only the parent's last hidden layer plus outputs, so it
+    passes on what the parent computes rather than its first-layer weights.
+  - New measures:
+    - KNOWLEDGE: linear readout of every introduced skill;
+    - FRONTIER: learning the stream's next skills;
+    - NOVEL: plasticity on reserved two-bit skills.
+  - Calibration of S now measures the climbing pace.
+  - All of this is written in `PREREGISTRATION_v2.md` before any v2 run.
