@@ -82,3 +82,21 @@
 {"tick":12545,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
 {"tick":12979,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
 {"tick":12980,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 12% of agents: if energy<\u00b7: CONSUME; else REPLICATE","data":{"shape":"if energy<\u00b7: CONSUME; else REPLICATE"}}
+{"tick":13190,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":13245,"epoch":1,"kind":"local_extinction","text":"The population of Harsh Highlands died out (settled since tick 1357).","data":{"habitat":3}}
+{"tick":13360,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 10% of agents: if resource<\u00b7: STEAL; if energy>\u00b7: REPLICATE; else CONSUME","data":{"shape":"if resource<\u00b7: STEAL; if energy>\u00b7: REPLICATE; else CONSUME"}}
+{"tick":13408,"epoch":1,"kind":"recolonization","text":"Harsh Highlands was resettled 163 ticks after dying out, after 2 attempts.","data":{"habitat":3}}
+{"tick":13734,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":14022,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":14440,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 10% of agents: if company>\u00b7: MOVE; if energy>\u00b7: REPLICATE; else CONSUME","data":{"shape":"if company>\u00b7: MOVE; if energy>\u00b7: REPLICATE; else CONSUME"}}
+{"tick":14835,"epoch":1,"kind":"generation","text":"Generation 500 reached.","data":{}}
+{"tick":15256,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":15277,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":15340,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":15569,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":15913,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":16348,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":16374,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":16530,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":16592,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":16828,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
