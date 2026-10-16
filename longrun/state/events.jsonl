@@ -119,3 +119,25 @@
 {"tick":20718,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
 {"tick":20839,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
 {"tick":20960,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 12% of agents: if energy>\u00b7: REPLICATE; if company>\u00b7: MIGRATE; else CONSUME","data":{"shape":"if energy>\u00b7: REPLICATE; if company>\u00b7: MIGRATE; else CONSUME"}}
+{"tick":21156,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":21489,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":21786,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":21947,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":22187,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":22520,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 11% of agents: if energy>\u00b7: REPLICATE; if belief>\u00b7: TEST; else CONSUME","data":{"shape":"if energy>\u00b7: REPLICATE; if belief>\u00b7: TEST; else CONSUME"}}
+{"tick":22777,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":22900,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":22983,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":23006,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":23837,"epoch":1,"kind":"generation","text":"Generation 800 reached.","data":{}}
+{"tick":23847,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":23931,"epoch":1,"kind":"shock","text":"Shock in Harsh Highlands: which node types are viable changed abruptly.","data":{"habitat":3}}
+{"tick":23998,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":24083,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":24120,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 10% of agents: if energy>\u00b7: REPLICATE; if resource>\u00b7: CONSUME; else STEAL","data":{"shape":"if energy>\u00b7: REPLICATE; if resource>\u00b7: CONSUME; else STEAL"}}
+{"tick":24380,"epoch":1,"kind":"innovation","text":"A new strategy shape spread to 11% of agents: if resource<\u00b7: MOVE; if energy>\u00b7: REPLICATE; else CONSUME","data":{"shape":"if resource<\u00b7: MOVE; if energy>\u00b7: REPLICATE; else CONSUME"}}
+{"tick":24620,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":24919,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":24970,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":24982,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
+{"tick":24987,"epoch":1,"kind":"shock","text":"Shock in Shock Valley: which node types are viable changed abruptly.","data":{"habitat":2}}
