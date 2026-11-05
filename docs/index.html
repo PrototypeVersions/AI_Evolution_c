@@ -157,6 +157,7 @@
   .panel .sub { color: var(--muted); font-size: 14px; margin: 0 0 14px; max-width: 60em; }
   .legend { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; position: sticky; top: 56px; z-index: 6;
             padding: 10px 0; background: linear-gradient(#000 70%, rgba(0,0,0,0)); }
+  .legend-note { color: var(--muted); font-size: 13px; margin: -10px 0 14px; }
   .chip { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-2);
           padding: 5px 10px; border-radius: 999px; border: 1px solid var(--ring); background: none; cursor: pointer; font-family: inherit; }
   .chip .sw { width: 14px; height: 3px; border-radius: 2px; background: var(--c); }
@@ -266,7 +267,7 @@
   <div class="wrap">
     <div class="kicker">Study 1 · a pre-registered experiment</div>
     <h1 id="title">Reproduce, or <em>live forever?</em></h1>
-    <p class="lede">Real neural networks learn in a world that never stops getting harder. Every one gets exactly the
+    <p class="lede">Real neural networks learn in a world that keeps getting harder. Every one gets exactly the
       same computing budget. Some live forever. Others make successors, by copying themselves, by teaching a child,
       or by passing on only their learning settings. Which way of living keeps a mind improving?</p>
     <div class="status" id="status"><span class="pulse"></span><span>Loading results…</span></div>
@@ -302,12 +303,13 @@
 <section class="block" id="world">
   <div class="wrap">
     <div class="kicker">The world</div>
-    <h2>A staircase of skills that never ends</h2>
+    <h2>A staircase of skills, one bit at a time</h2>
     <div class="world">
       <div class="facts">
         <p>Each input is 32 random bits, ±1. A <b>skill</b> is the parity of a few of those bits: whether an even
           or odd number of them are −1. The world starts with four 2-bit skills. Every few eras a new skill appears,
-          made by adding one bit to a skill that already exists.</p>
+          made by adding one bit to a skill that already exists. The study runs for 120 eras and no skill grows past 10
+          bits; by the end, the biggest skill in a world had 5 to 10 bits.</p>
         <p>Big parities are almost impossible to learn from scratch, but easy if you already know the smaller one
           they grew from (the "staircase" effect, Abbe et al., 2022). In our check (learning rate 3e-3, at most 4,000
           steps), fresh networks failed at 5- and 6-bit skills in 5 of 6 tries, while networks that climbed one bit at a
@@ -377,8 +379,9 @@
             one era's full budget to learn each of the next skills, it fully learned about 85% of them (93–94% accuracy,
             where 50% is guessing), against 31% for the immortal learner (75%). It led in all four conditions. We
             predicted it would not. Most of the lead remains at a fixed learning rate (85–90% accuracy, with 63–72%
-            fully learned). In its own life each of the four networks trains on only a quarter of the budget, which may
-            itself slow the wear; this study cannot separate that from the copying.</p>
+            fully learned). In its own life each of the four networks trains on only a quarter of the budget, and the
+            four started from varied learning settings that include weight decay, which the immortal learner never had.
+            Either may slow the wear on its own, and this study cannot separate them from the copying.</p>
           <div class="src">H3c · held in all four conditions, against our prediction</div></article>
         <article class="finding"><h3>Teaching a child did not pass knowledge on</h3>
           <p>Taught children did not reliably know more skills than restarted ones (the one gap, 2.5 points in the slow
@@ -411,6 +414,7 @@
         <span class="seg" id="seg-L"><button data-v="5">5 eras</button><button data-v="20">20 eras</button></span></span>
     </div>
     <div class="legend" id="legend" aria-label="Life histories: click to hide or show, hover to highlight"></div>
+    <p class="legend-note">The line charts start with four life histories. Click a name to add or remove one.</p>
 
     <div class="panel">
       <h3>Keeping up with a world that gets harder</h3>
@@ -533,7 +537,7 @@ const PLAIN = {
   H2b: ["Copied weights carry knowledge; inherited settings don't.", "Clone vs Genes: skills known"],
   H3a: ["A taught child takes the next step better than an immortal learner.", "Teach vs Immortal: next step"],
   H3b: ["A line of taught children keeps up better than an immortal learner.", "Teach vs Immortal: keeping up"],
-  H3c: ["Copying weights escapes the slowdown: a cloning population takes the next step better than an immortal learner.", "Clone vs Immortal: next step"],
+  H3c: ["A population that copies its best member's weights takes the next step better than an immortal learner.", "Clone vs Immortal: next step"],
   H4a: ["Teaching is more than a reset: it helps take the next step.", "Teach vs Reset: next step"],
   H4b: ["Teaching is more than a reset: it helps keep up.", "Teach vs Reset: keeping up"],
   H5: ["Natural selection on learning settings beats random search.", "Genes vs Random: keeping up"],
@@ -546,7 +550,8 @@ const PLAIN = {
   S5: ["A 16-era childhood keeps up better than immortality.", "Teach ×16 vs Immortal: keeping up"],
   S6: ["A 4-era childhood keeps up better than Reset.", "Teach ×4 vs Reset: keeping up"],
 };
-const state = { R: 6, L: 20, hidden: new Set(), focus: null };
+// the line charts open on four main life histories; the legend adds the rest
+const state = { R: 6, L: 20, hidden: new Set(["RESTART", "GENES", "RANDOM", "TEACH4", "TEACH16"]), focus: null };
 const NS = "http://www.w3.org/2000/svg";
 function S(tag, attrs = {}, parent) {
   const e = document.createElementNS(NS, tag);
